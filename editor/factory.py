@@ -15,11 +15,11 @@ class GameFactory:
         return Item(i_id, name, description)
 
     @staticmethod
-    def create_npc(name: str, description: str, dialogue: str) -> NPC:
+    def create_npc(name: str, description: str, dialogue: str, npc_type: str="neutral", damage: int=0, hp: int=100) -> NPC:
         n_id = f"npc_{uuid.uuid4().hex[:8]}"
-        return NPC(n_id, name, description, dialogue)
+        return NPC(n_id, name, description, dialogue, npc_type, damage, hp)
         
     @staticmethod
     def create_player(name: str, description: str, room_id: str) -> Player:
         p_id = f"player_{uuid.uuid4().hex[:8]}"
-        return Player(p_id, name, description, room_id)
+        return Player(p_id, name, description, room_id, hp=100)

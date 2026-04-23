@@ -1,0 +1,117 @@
+{
+    "rooms": [
+        {
+            "id": "room_village",
+            "name": "Village Square",
+            "description": "A peaceful village square with a bubbling fountain. A dark and ominous forest lies to the 'north'.",
+            "exits": {
+                "north": "room_forest"
+            },
+            "item_ids": [
+                "item_apple"
+            ],
+            "npc_ids": [
+                "npc_villager"
+            ]
+        },
+        {
+            "id": "room_forest",
+            "name": "Dark Forest",
+            "description": "The trees are so thick here that barely any sunlight reaches the ground. A narrow path leads 'east' towards a tall spire, and the village is back to the 'south'.",
+            "exits": {
+                "south": "room_village",
+                "east": "room_tower"
+            },
+            "item_ids": [
+                "item_wand",
+                "item_sword"
+            ],
+            "npc_ids": [
+                "npc_goblin"
+            ]
+        },
+        {
+            "id": "room_tower",
+            "name": "Wizard's Tower",
+            "description": "The air crackles with magical energy inside this circular stone tower. The way out is to the 'west'.",
+            "exits": {
+                "west": "room_forest"
+            },
+            "item_ids": [],
+            "npc_ids": [
+                "npc_wizard"
+            ]
+        }
+    ],
+    "items": [
+        {
+            "id": "item_apple",
+            "name": "Apple",
+            "description": "A shiny red apple.",
+            "item_type": "consumable",
+            "stats": {
+                "heal": 20
+            }
+        },
+        {
+            "id": "item_wand",
+            "name": "Wand",
+            "description": "A wooden stick that hums with hidden magical power.",
+            "item_type": "weapon",
+            "stats": {
+                "damage": 35
+            }
+        },
+        {
+            "id": "item_sword",
+            "name": "Sword",
+            "description": "An old broadsword found in the woods.",
+            "item_type": "weapon",
+            "stats": {
+                "damage": 15
+            }
+        }
+    ],
+    "npcs": [
+        {
+            "id": "npc_villager",
+            "type": "NPC",
+            "name": "Frightened Villager",
+            "description": "A local who looks absolutely terrified.",
+            "hp": 100,
+            "dialogue": "Watch out for the goblin in the forest!",
+            "npc_type": "neutral",
+            "damage": 0
+        },
+        {
+            "id": "npc_goblin",
+            "type": "NPC",
+            "name": "Vicious Goblin",
+            "description": "A green-skinned monster holding a dagger.",
+            "hp": 40,
+            "dialogue": "Arhg!",
+            "npc_type": "hostile",
+            "damage": 15
+        },
+        {
+            "id": "npc_wizard",
+            "type": "NPC",
+            "name": "Old Wizard",
+            "description": "An old man wearing a pointed hat.",
+            "hp": 200,
+            "dialogue": "Ah, a visitor. Have you brought me my lost wand?",
+            "npc_type": "neutral",
+            "damage": 0
+        }
+    ],
+    "player": {
+        "id": "player_hero2",
+        "type": "Player",
+        "name": "Ali",
+        "description": "The brave seeker of knowledge.",
+        "hp": 100,
+        "inventory": [],
+        "current_room_id": "room_village",
+        "previous_room_id": null
+    }
+}

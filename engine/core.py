@@ -25,11 +25,24 @@ class GameEngine:
         if room.items:
             print("You see:", ", ".join([i.name for i in room.items]))
         if room.npcs:
-            print("Characters here:", ", ".join([n.name for n in room.npcs]))
+            print("Characters here:", ", ".join([f"{n.name} (HP:{n.hp})" for n in room.npcs]))
         if room.exits:
             print("Exits:", ", ".join(room.exits.keys()))
         else:
             print("There are no obvious exits.")
+
+    def _check_hostiles(self):
+        room = self.state.rooms.get(self.state.player.current_room_id)
+        if not room: return
+        for npc in room.npcs:
+            if getattr(npc, 'npc_type', 'neutral') == 'hostile':
+                dmg = getattr(npc, 'damage', 15)
+                self.state.player.hp -= dmg
+                print(f"\n!!! AMBUSH !!!")
+                print(f"The {npc.name} attacks you dealing {dmg} damage! (Your HP: {max(0, self.state.player.hp)})")
+                if self.state.player.hp <= 0:
+                    print("You have been defeated... GAME OVER.")
+                    self.can_play = False
 
     def run(self):
         if not self.can_play:
@@ -37,13 +50,13 @@ class GameEngine:
             
         print(f"\nWelcome to the Adventure, {self.state.player.name}!")
         self._look()
+        self._check_hostiles()
         
-        while True:
+        while self.can_play:
             cmd = input("\n> ")
             res = self.parser.parse_and_execute(cmd)
             if res == "QUIT":
                 print("Saving game...")
-                # Assuming the file loaded is where we save
                 self.state.save("save_data.json")
                 print("Thanks for playing!")
                 break
