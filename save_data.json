@@ -1,0 +1,117 @@
+{
+    "rooms": [
+        {
+            "id": "room_village",
+            "name": "Dragon's Tooth",
+            "description": "Mighty sharp tooth fragment. Exits: 'north'.",
+            "exits": {
+                "north": "room_forest"
+            },
+            "item_ids": [
+                "item_apple"
+            ],
+            "npc_ids": [
+                "npc_villager"
+            ]
+        },
+        {
+            "id": "room_forest",
+            "name": "Ancient Tome",
+            "description": "Leather bound dusty book. Exits: 'south', 'east'.",
+            "exits": {
+                "south": "room_village",
+                "east": "room_tower"
+            },
+            "item_ids": [
+                "item_wand",
+                "item_sword"
+            ],
+            "npc_ids": [
+                "npc_goblin"
+            ]
+        },
+        {
+            "id": "room_tower",
+            "name": "Cursed Amulet",
+            "description": "Glowing with dark magic. Exits: 'west'.",
+            "exits": {
+                "west": "room_forest"
+            },
+            "item_ids": [],
+            "npc_ids": [
+                "npc_wizard"
+            ]
+        }
+    ],
+    "items": [
+        {
+            "id": "item_apple",
+            "name": "Mystic Staff",
+            "description": "Glows with soft blue light.",
+            "item_type": "consumable",
+            "stats": {
+                "heal": 47
+            }
+        },
+        {
+            "id": "item_wand",
+            "name": "Healing Tear",
+            "description": "Small vial of liquid crystal.",
+            "item_type": "weapon",
+            "stats": {
+                "damage": 44
+            }
+        },
+        {
+            "id": "item_sword",
+            "name": "Tattered Cloak",
+            "description": "Ragged and worn cloak.",
+            "item_type": "weapon",
+            "stats": {
+                "damage": 16
+            }
+        }
+    ],
+    "npcs": [
+        {
+            "id": "npc_villager",
+            "type": "NPC",
+            "name": "Fierce Orc",
+            "description": "Scaly green warrior.",
+            "hp": 60,
+            "dialogue": "You'll pay!",
+            "npc_type": "neutral",
+            "damage": 0
+        },
+        {
+            "id": "npc_goblin",
+            "type": "NPC",
+            "name": "Mysterious Stranger",
+            "description": "Muted hooded figure.",
+            "hp": 162,
+            "dialogue": "Not now, friend.",
+            "npc_type": "hostile",
+            "damage": 17
+        },
+        {
+            "id": "npc_wizard",
+            "type": "NPC",
+            "name": "Wise Druid",
+            "description": "Nature-attuned woman.",
+            "hp": 150,
+            "dialogue": "Follow me slowly.",
+            "npc_type": "neutral",
+            "damage": 0
+        }
+    ],
+    "player": {
+        "id": "player_hero2",
+        "type": "Player",
+        "name": "Eryndor Thorne",
+        "description": "A young brave adventurer.",
+        "hp": 160,
+        "inventory": [],
+        "current_room_id": "room_village",
+        "previous_room_id": null
+    }
+}

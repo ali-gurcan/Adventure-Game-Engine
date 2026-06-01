@@ -1,0 +1,117 @@
+{
+    "rooms": [
+        {
+            "id": "room_village",
+            "name": "Dusty Cellar",
+            "description": "A damp musty underground room. Exits: 'north'.",
+            "exits": {
+                "north": "room_forest"
+            },
+            "item_ids": [
+                "item_apple"
+            ],
+            "npc_ids": [
+                "npc_villager"
+            ]
+        },
+        {
+            "id": "room_forest",
+            "name": "Muddy Swamp",
+            "description": "Murky waters with slimy plants. Exits: 'south', 'east'.",
+            "exits": {
+                "south": "room_village",
+                "east": "room_tower"
+            },
+            "item_ids": [
+                "item_wand",
+                "item_sword"
+            ],
+            "npc_ids": [
+                "npc_goblin"
+            ]
+        },
+        {
+            "id": "room_tower",
+            "name": "Abandoned Mine",
+            "description": "Dark empty tunnels of stone. Exits: 'west'.",
+            "exits": {
+                "west": "room_forest"
+            },
+            "item_ids": [],
+            "npc_ids": [
+                "npc_wizard"
+            ]
+        }
+    ],
+    "items": [
+        {
+            "id": "item_apple",
+            "name": "Leather Tunic",
+            "description": "Worn but sturdy armor piece.",
+            "item_type": "consumable",
+            "stats": {
+                "heal": 59
+            }
+        },
+        {
+            "id": "item_wand",
+            "name": "Magic Quill",
+            "description": "Glows softly in darkness.",
+            "item_type": "weapon",
+            "stats": {
+                "damage": 42
+            }
+        },
+        {
+            "id": "item_sword",
+            "name": "Golden Amulet",
+            "description": "Shines brightly on the chest.",
+            "item_type": "weapon",
+            "stats": {
+                "damage": 22
+            }
+        }
+    ],
+    "npcs": [
+        {
+            "id": "npc_villager",
+            "type": "NPC",
+            "name": "Vagabond",
+            "description": "A homeless old man.",
+            "hp": 162,
+            "dialogue": "Food is scarce.",
+            "npc_type": "neutral",
+            "damage": 0
+        },
+        {
+            "id": "npc_goblin",
+            "type": "NPC",
+            "name": "Dragon",
+            "description": "A fierce fire-breathing beast.",
+            "hp": 133,
+            "dialogue": "You will burn!",
+            "npc_type": "hostile",
+            "damage": 11
+        },
+        {
+            "id": "npc_wizard",
+            "type": "NPC",
+            "name": "King's Guard",
+            "description": "An armored noble knight.",
+            "hp": 124,
+            "dialogue": "I'll defend the crown.",
+            "npc_type": "neutral",
+            "damage": 0
+        }
+    ],
+    "player": {
+        "id": "player_hero2",
+        "type": "Player",
+        "name": "Elara",
+        "description": "A skilled young elf archer.",
+        "hp": 154,
+        "inventory": [],
+        "current_room_id": "room_village",
+        "previous_room_id": null
+    }
+}
