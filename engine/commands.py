@@ -386,7 +386,16 @@ class BuyCommand(Command):
             print(c.dim("There is no merchant here to buy from."))
             return
 
-        target_item = room.get_item_by_name(item_name)
+        # Generate the merchant's shop list
+        wares = self.engine_sys.state.items
+        shop_items = [itm for itm in wares.values() if itm.value > 0 and itm.item_type != 'misc']
+        shop_items = shop_items[:5]
+
+        target_item = None
+        for itm in shop_items:
+            if itm.name.lower() == item_name:
+                target_item = itm
+                break
 
         if not target_item:
             print(c.dim(f"The merchant doesn't have '{item_name}' for sale."))
@@ -401,11 +410,13 @@ class BuyCommand(Command):
             print(f"  Your gold: {c.gold(player.gold)}")
             return
 
+        import copy
+        purchased_item = copy.deepcopy(target_item)
+
         # Complete purchase
         player.gold -= price
-        room.items.remove(target_item)
-        player.inventory.append(target_item)
-        print(f"  💰 You bought {c.item_bold(target_item.name)} for {c.gold(price)}!")
+        player.inventory.append(purchased_item)
+        print(f"  💰 You bought {c.item_bold(purchased_item.name)} for {c.gold(price)}!")
         print(f"  Remaining gold: {c.gold(player.gold)}")
 
 

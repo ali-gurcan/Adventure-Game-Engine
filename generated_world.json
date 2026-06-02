@@ -2,11 +2,12 @@
     "rooms": [
         {
             "id": "room_village",
-            "name": "Cave Entrance",
-            "description": "Dark, damp cave opening. Exits: 'east'.",
+            "name": "Ashen Wastes",
+            "description": "Barren expanses of ash and stone stretch towards a sickle moon hanging low. Exits: 'north', 'east'.",
             "x": 0,
             "y": 1,
             "exits": {
+                "north": "room_forest",
                 "east": "room_market"
             },
             "item_ids": [
@@ -18,13 +19,12 @@
         },
         {
             "id": "room_market",
-            "name": "Mysterious Forest",
-            "description": "Twisted trees and mist. Exits: 'west', 'north'.",
+            "name": "Bloodstone Keep",
+            "description": "Towers shrouded in mist pierce the grey sky like skeletal fingers grasping for the clouds. Exits: 'west'.",
             "x": 1,
             "y": 1,
             "exits": {
-                "west": "room_village",
-                "north": "room_tower"
+                "west": "room_village"
             },
             "item_ids": [
                 "item_shield"
@@ -34,118 +34,118 @@
             ]
         },
         {
-            "id": "room_tower",
-            "name": "Old Castle Ruin",
-            "description": "Falling stone walls. Exits: 'south', 'north'.",
-            "x": 1,
+            "id": "room_forest",
+            "name": "Pale Reaches",
+            "description": "Frostbitten forests whisper secrets to the wind that whisks them away on dark wings. Exits: 'south', 'north'.",
+            "x": 0,
             "y": 0,
             "exits": {
-                "south": "room_market",
-                "north": "room_dungeon"
+                "south": "room_village",
+                "north": "room_cave"
             },
             "item_ids": [
-                "item_wand"
+                "item_sword"
             ],
             "npc_ids": [
-                "npc_wizard"
+                "npc_goblin"
             ]
         },
         {
-            "id": "room_dungeon",
-            "name": "Wizard Tower",
-            "description": "Pointed roof, magical aura. Exits: 'south'.",
-            "x": 1,
+            "id": "room_cave",
+            "name": "Ghosthollow Ruins",
+            "description": "Ancient stones overgrown with vines and moss hide forgotten mysteries. Exits: 'south'.",
+            "x": 0,
             "y": -1,
             "exits": {
-                "south": "room_tower"
+                "south": "room_forest"
             },
-            "item_ids": [],
-            "npc_ids": [
-                "npc_skeleton"
-            ]
+            "item_ids": [
+                "item_potion"
+            ],
+            "npc_ids": []
         }
     ],
     "items": [
         {
             "id": "item_apple",
-            "name": "Magical Orb",
-            "description": "Glowing blue energy source.",
+            "name": "Voidstone Dagger",
+            "description": "A blade forged from starlight; whispers of the cosmos echo within its edge.",
+            "item_type": "consumable",
+            "stats": {
+                "heal": 52
+            },
+            "value": 13
+        },
+        {
+            "id": "item_sword",
+            "name": "Flask of Shadowfire",
+            "description": "Burning embers suspended in darkness, one sip ignites hidden passions.",
+            "item_type": "weapon",
+            "stats": {
+                "damage": 40
+            },
+            "value": 25
+        },
+        {
+            "id": "item_shield",
+            "name": "Gravewarden's Gauntlets",
+            "description": "Fierce gauntlets etched with the names of every warrior who ever wore them.",
+            "item_type": "armor",
+            "stats": {
+                "defense": 19
+            },
+            "value": 39
+        },
+        {
+            "id": "item_potion",
+            "name": "Nightshroud Cloak",
+            "description": "A dark cloak woven from threads spun by the very night itself.",
             "item_type": "consumable",
             "stats": {
                 "heal": 25
             },
-            "value": 5
-        },
-        {
-            "id": "item_wand",
-            "name": "Healing Crystal",
-            "description": "Shining white crystal shard.",
-            "item_type": "weapon",
-            "stats": {
-                "damage": 36
-            },
-            "value": 75
-        },
-        {
-            "id": "item_shield",
-            "name": "Dragon Scale",
-            "description": "Scaly plate of dark armor.",
-            "item_type": "armor",
-            "stats": {
-                "defense": 14
-            },
-            "value": 54
+            "value": 34
         }
     ],
     "npcs": [
         {
             "id": "npc_villager",
             "type": "NPC",
-            "name": "Elara",
-            "description": "A shy elf maiden.",
-            "hp": 74,
-            "dialogue": "Please don't hurt me!",
+            "name": "Mira the Seer",
+            "description": "A mystic cartographer mapping the unseen paths through forgotten realms.",
+            "hp": 135,
+            "dialogue": "The paths you seek lie where shadows hide their own faces.",
             "npc_type": "neutral",
             "damage": 0
         },
         {
             "id": "npc_merchant",
             "type": "NPC",
-            "name": "Grimgold",
-            "description": "Mighty blacksmith.",
-            "hp": 169,
-            "dialogue": "Forge what you need.",
+            "name": "Grask the Devourer",
+            "description": "A beast born of darkness, its maw always hungrier for the flesh it consumes.",
+            "hp": 106,
+            "dialogue": "You will soon be nothing but a meal to satisfy my eternal hunger.",
             "npc_type": "merchant",
             "damage": 0
         },
         {
-            "id": "npc_wizard",
+            "id": "npc_goblin",
             "type": "NPC",
-            "name": "Thorne",
-            "description": "Tough-looking guard.",
-            "hp": 84,
-            "dialogue": "What brings you here?",
-            "npc_type": "neutral",
-            "damage": 0
-        },
-        {
-            "id": "npc_skeleton",
-            "type": "NPC",
-            "name": "Lila",
-            "description": "Beautiful fairy queen.",
-            "hp": 94,
-            "dialogue": "Come closer, mortal.",
+            "name": "Elara the Weir",
+            "description": "A witch bound to the earth, her roots digging deeper into the very ground itself.",
+            "hp": 83,
+            "dialogue": "The heart you seek beats in the ruins where the ancient ones slumber.",
             "npc_type": "hostile",
-            "damage": 20
+            "damage": 10
         }
     ],
     "player": {
-        "id": "player_hero2",
+        "id": "player_hero",
         "type": "Player",
-        "name": "Eryndor Thorne",
-        "description": "Strong and brave knight.",
-        "hp": 106,
-        "gold": 59,
+        "name": "Hurin",
+        "description": "A brave young warrior with a sharp mind and sharper blade.",
+        "hp": 183,
+        "gold": 50,
         "inventory": [],
         "active_quests": [],
         "completed_quests": [],
@@ -154,13 +154,14 @@
     },
     "quests": [
         {
-            "id": "quest_collect_wand",
-            "name": "The Lost Amulet",
-            "description": "Retrieve the ancient charm.",
-            "quest_type": "collect",
-            "target_id": "item_wand",
-            "giver_npc_id": "npc_wizard",
-            "reward_gold": 25,
+            "id": "quest_kill_goblin",
+            "name": "Goblin Hunt",
+            "description": "The villager begs you to defeat the vicious goblin terrorizing the Dark Forest. A reward awaits!",
+            "quest_type": "kill",
+            "target_id": "npc_goblin",
+            "deliver_to": null,
+            "giver_npc_id": "npc_villager",
+            "reward_gold": 30,
             "status": "available"
         }
     ]
