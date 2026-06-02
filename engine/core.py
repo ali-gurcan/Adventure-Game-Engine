@@ -16,6 +16,14 @@ class GameEngine:
         else:
             self.can_play = True
 
+    def _get_player_defense(self):
+        """Calculate total defense from armor in inventory."""
+        total_defense = 0
+        for itm in self.state.player.inventory:
+            if itm.item_type == "armor" and "defense" in itm.stats:
+                total_defense += itm.stats["defense"]
+        return total_defense
+
     def _look(self):
         room = self.state.rooms.get(self.state.player.current_room_id)
         if not room:
@@ -29,8 +37,11 @@ class GameEngine:
         if room.npcs:
             npc_strs = []
             for n in room.npcs:
-                if getattr(n, 'npc_type', 'neutral') == 'hostile':
+                npc_type = getattr(n, 'npc_type', 'neutral')
+                if npc_type == 'hostile':
                     npc_strs.append(f"{c.enemy(n.name)} (HP:{c.damage(str(n.hp))})")
+                elif npc_type == 'merchant':
+                    npc_strs.append(f"{c.merchant(n.name)} 🪙")
                 else:
                     npc_strs.append(f"{c.info(n.name)} (HP:{n.hp})")
             print(f"Characters here: {', '.join(npc_strs)}")
@@ -49,10 +60,17 @@ class GameEngine:
         if not room: return
         for npc in room.npcs:
             if getattr(npc, 'npc_type', 'neutral') == 'hostile':
-                dmg = getattr(npc, 'damage', 15)
-                self.state.player.hp -= dmg
+                raw_dmg = getattr(npc, 'damage', 15)
+                defense = self._get_player_defense()
+                actual_dmg = max(1, raw_dmg - defense)
+                self.state.player.hp -= actual_dmg
                 print(f"\n{c.error('!!! AMBUSH !!!')}")
-                print(f"The {c.enemy(npc.name)} attacks you dealing {c.damage(str(dmg))} damage! (Your HP: {c.hp_color(max(0, self.state.player.hp))})")
+                if defense > 0:
+                    print(f"The {c.enemy(npc.name)} attacks you dealing {c.damage(str(raw_dmg))} damage! "
+                          f"(Armor absorbs {c.defense_color(str(raw_dmg - actual_dmg))}. "
+                          f"You take {c.damage(str(actual_dmg))}. Your HP: {c.hp_color(max(0, self.state.player.hp))})")
+                else:
+                    print(f"The {c.enemy(npc.name)} attacks you dealing {c.damage(str(actual_dmg))} damage! (Your HP: {c.hp_color(max(0, self.state.player.hp))})")
                 if self.state.player.hp <= 0:
                     print(c.error("You have been defeated... GAME OVER."))
                     self.can_play = False
@@ -62,6 +80,7 @@ class GameEngine:
             return
             
         print(f"\n{c.bold('Welcome to the Adventure')}, {c.room_name(self.state.player.name)}!")
+        print(f"  💰 Starting gold: {c.gold(self.state.player.gold)}")
         self._look()
         self._check_hostiles()
         

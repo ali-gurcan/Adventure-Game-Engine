@@ -3,11 +3,12 @@
         {
             "id": "room_village",
             "name": "Village Square",
-            "description": "A peaceful village square with a bubbling fountain. A dark and ominous forest lies to the 'north'.",
+            "description": "A peaceful village square with a bubbling fountain.",
             "x": 0,
             "y": 1,
             "exits": {
-                "north": "room_forest"
+                "north": "room_forest",
+                "east": "room_market"
             },
             "item_ids": [
                 "item_apple"
@@ -17,17 +18,34 @@
             ]
         },
         {
+            "id": "room_market",
+            "name": "Market District",
+            "description": "A bustling bazaar filled with exotic goods and spices.",
+            "x": 1,
+            "y": 1,
+            "exits": {
+                "west": "room_village",
+                "north": "room_tower"
+            },
+            "item_ids": [
+                "item_shield"
+            ],
+            "npc_ids": [
+                "npc_merchant"
+            ]
+        },
+        {
             "id": "room_forest",
             "name": "Dark Forest",
-            "description": "The trees are so thick here that barely any sunlight reaches the ground. A narrow path leads 'east' towards a tall spire, and the village is back to the 'south'.",
+            "description": "The trees are so thick here that barely any sunlight reaches the ground.",
             "x": 0,
             "y": 0,
             "exits": {
                 "south": "room_village",
-                "east": "room_tower"
+                "east": "room_tower",
+                "north": "room_cave"
             },
             "item_ids": [
-                "item_wand",
                 "item_sword"
             ],
             "npc_ids": [
@@ -37,31 +55,48 @@
         {
             "id": "room_tower",
             "name": "Wizard's Tower",
-            "description": "The air crackles with magical energy inside this circular stone tower. The way out is to the 'west'.",
+            "description": "The air crackles with magical energy inside this circular stone tower.",
             "x": 1,
             "y": 0,
             "exits": {
                 "west": "room_forest",
+                "south": "room_market",
                 "north": "room_dungeon"
             },
-            "item_ids": [],
+            "item_ids": [
+                "item_wand"
+            ],
             "npc_ids": [
                 "npc_wizard"
             ]
         },
         {
+            "id": "room_cave",
+            "name": "Crystal Cave",
+            "description": "Glittering crystals illuminate the damp cave walls with eerie light.",
+            "x": 0,
+            "y": -1,
+            "exits": {
+                "south": "room_forest",
+                "east": "room_dungeon"
+            },
+            "item_ids": [
+                "item_potion"
+            ],
+            "npc_ids": []
+        },
+        {
             "id": "room_dungeon",
             "name": "Ancient Dungeon",
-            "description": "A damp underground passage lit by flickering torches. Strange markings cover the walls.",
+            "description": "A damp underground passage lit by flickering torches.",
             "x": 1,
             "y": -1,
             "exits": {
                 "south": "room_tower",
+                "west": "room_cave",
                 "east": "room_throne"
             },
-            "item_ids": [
-                "item_shield"
-            ],
+            "item_ids": [],
             "npc_ids": [
                 "npc_skeleton"
             ]
@@ -69,7 +104,7 @@
         {
             "id": "room_throne",
             "name": "Throne Room",
-            "description": "A grand hall with a towering stone throne at the far end. Cold wind blows through shattered windows.",
+            "description": "A grand hall with a towering stone throne at the far end.",
             "x": 2,
             "y": -1,
             "exits": {
@@ -91,16 +126,8 @@
             "item_type": "consumable",
             "stats": {
                 "heal": 20
-            }
-        },
-        {
-            "id": "item_wand",
-            "name": "Wand",
-            "description": "A wooden stick that hums with hidden magical power.",
-            "item_type": "weapon",
-            "stats": {
-                "damage": 35
-            }
+            },
+            "value": 5
         },
         {
             "id": "item_sword",
@@ -109,7 +136,18 @@
             "item_type": "weapon",
             "stats": {
                 "damage": 15
-            }
+            },
+            "value": 30
+        },
+        {
+            "id": "item_wand",
+            "name": "Wand",
+            "description": "A wooden stick that hums with hidden magical power.",
+            "item_type": "weapon",
+            "stats": {
+                "damage": 35
+            },
+            "value": 60
         },
         {
             "id": "item_shield",
@@ -118,14 +156,26 @@
             "item_type": "armor",
             "stats": {
                 "defense": 10
-            }
+            },
+            "value": 40
+        },
+        {
+            "id": "item_potion",
+            "name": "Health Potion",
+            "description": "A glowing red magical liquid.",
+            "item_type": "consumable",
+            "stats": {
+                "heal": 50
+            },
+            "value": 25
         },
         {
             "id": "item_crown",
             "name": "Crown",
             "description": "A golden crown encrusted with gems.",
             "item_type": "misc",
-            "stats": {}
+            "stats": {},
+            "value": 100
         }
     ],
     "npcs": [
@@ -137,6 +187,16 @@
             "hp": 100,
             "dialogue": "Watch out for the goblin in the forest!",
             "npc_type": "neutral",
+            "damage": 0
+        },
+        {
+            "id": "npc_merchant",
+            "type": "NPC",
+            "name": "Traveling Merchant",
+            "description": "A shrewd trader with a heavy pack of goods.",
+            "hp": 100,
+            "dialogue": "Looking to buy or sell? I have the finest wares!",
+            "npc_type": "merchant",
             "damage": 0
         },
         {
@@ -186,6 +246,7 @@
         "name": "Ali",
         "description": "The brave seeker of knowledge.",
         "hp": 100,
+        "gold": 50,
         "inventory": [],
         "current_room_id": "room_village",
         "previous_room_id": null

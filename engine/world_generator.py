@@ -18,7 +18,7 @@ class WorldGenerator:
     """
     Generates a unique game world by loading a static template and 
     using Ollama to generate ONLY the text content (names, descriptions).
-    Randomly selects 3-5 rooms from the 5-room template.
+    Randomly selects 3-5 connected rooms from the 7-room template.
     """
 
     DEFAULT_MODEL = "Meta-Llama-3.1-8B-Instruct-GGUF:Q4_K_M"
@@ -40,19 +40,20 @@ class WorldGenerator:
         except Exception as e:
             raise RuntimeError(f"❌ Could not load base template: {e}")
 
-        # 2. Randomly select 3-5 rooms from the template
+        # 2. Randomly select 3-5 CONNECTED rooms from the template
         room_count = random.randint(3, 5)
         world_data = self._trim_world(world_data, room_count)
-        print(f"   🏰 Room count: {room_count}")
+        actual_room_count = len(world_data.get('rooms', []))
+        print(f"   🏰 Room count: {actual_room_count}")
 
         for attempt in range(self.MAX_RETRIES + 1):
             try:
                 # 3. Get names and text from LLM
-                request_body = self._build_request(room_count)
+                request_body = self._build_request(world_data)
                 raw_response = self._call_ollama(request_body)
                 
                 # 4. Inject new names into the template structure
-                updated_world = self._apply_replacements(world_data, raw_response, room_count)
+                updated_world = self._apply_replacements(world_data, raw_response)
                 print("\n✅ World generated successfully!")
                 return updated_world
             except Exception as e:
@@ -61,20 +62,56 @@ class WorldGenerator:
         raise RuntimeError("World generation failed completely. No fallback world will be used.")
 
     def _trim_world(self, data: dict, room_count: int) -> dict:
-        """Trims the world to room_count rooms and fixes dangling exits."""
+        """Trims the world to room_count rooms using random connected subgraph selection."""
         data = copy.deepcopy(data)
         rooms = data.get('rooms', [])
         
-        # Keep only the first room_count rooms
-        kept_rooms = rooms[:room_count]
-        kept_room_ids = {r['id'] for r in kept_rooms}
+        if len(rooms) <= room_count:
+            return data
+        
+        # Build adjacency map
+        room_map = {r['id']: r for r in rooms}
+        
+        # Start from player's starting room (always room_village)
+        start_room_id = data.get('player', {}).get('current_room_id', rooms[0]['id'])
+        
+        # BFS-based random connected subgraph selection
+        selected_ids = set()
+        selected_ids.add(start_room_id)
+        frontier = [start_room_id]
+        
+        while len(selected_ids) < room_count and frontier:
+            # Pick a random room from the frontier
+            current_id = random.choice(frontier)
+            current_room = room_map.get(current_id)
+            if not current_room:
+                frontier.remove(current_id)
+                continue
+            
+            # Get unvisited neighbors
+            neighbors = [
+                target_id for target_id in current_room.get('exits', {}).values()
+                if target_id not in selected_ids and target_id in room_map
+            ]
+            
+            if neighbors:
+                # Add a random neighbor
+                next_id = random.choice(neighbors)
+                selected_ids.add(next_id)
+                frontier.append(next_id)
+            else:
+                # No more unvisited neighbors from this room
+                frontier.remove(current_id)
+        
+        # Keep only selected rooms
+        kept_rooms = [r for r in rooms if r['id'] in selected_ids]
         
         # Remove exits that point to removed rooms
         for room in kept_rooms:
             room['exits'] = {
                 direction: target_id
                 for direction, target_id in room.get('exits', {}).items()
-                if target_id in kept_room_ids
+                if target_id in selected_ids
             }
         
         data['rooms'] = kept_rooms
@@ -91,27 +128,36 @@ class WorldGenerator:
         
         return data
 
-    def _build_request(self, room_count: int) -> str:
+    def _build_request(self, world_data: dict) -> str:
         variety_seed = random.randint(1, 100000)
         
-        # Dynamic line count based on room_count
-        item_count = len([1 for _ in range(3)])  # always 3 items max
-        npc_count = len([1 for _ in range(3)])    # always 3 NPCs max
+        room_count = len(world_data.get('rooms', []))
+        item_count = len(world_data.get('items', []))
+        npc_count = len(world_data.get('npcs', []))
         total_lines = room_count + item_count + npc_count + 1  # +1 for player
         
         # Build dynamic format section
         room_lines = "\n".join([f"[Room {i+1} Name]|[Very short description]" for i in range(room_count)])
-        item_lines = "[Item Name]|[Very short description]\n" * 3
-        npc_lines = "[NPC Name]|[Very short desc]|[Very short dialogue]\n" * 3
+        item_lines = "\n".join([f"[Item Name]|[Very short description]" for _ in range(item_count)])
+        
+        # Determine NPC format based on types
+        npc_format_lines = []
+        for npc in world_data.get('npcs', []):
+            npc_type = npc.get('npc_type', 'neutral')
+            if npc_type == 'merchant':
+                npc_format_lines.append("[Merchant Name]|[Very short desc]|[Short merchant greeting]")
+            else:
+                npc_format_lines.append("[NPC Name]|[Very short desc]|[Very short dialogue]")
+        npc_lines = "\n".join(npc_format_lines)
         
         system_prompt = f"""You are a game generator. Reply with EXACTLY {total_lines} lines of pipe-separated (|) text. NO markdown, NO intro.
-Order: {room_count} Rooms, 3 Items, 3 NPCs, 1 Player.
+Order: {room_count} Rooms, {item_count} Items, {npc_count} NPCs, 1 Player.
 Keep descriptions and dialogues EXTREMELY short (max 3-5 words) to save time!
 
 Format:
 {room_lines}
-{item_lines.strip()}
-{npc_lines.strip()}
+{item_lines}
+{npc_lines}
 [Player Name]|[Very short desc]
 
 Example:
@@ -135,7 +181,7 @@ Sir Boramir|A brave and noble knight."""
             "stream": True,
             "options": {
                 "temperature": 0.8,
-                "num_predict": 150
+                "num_predict": 200
             }
         })
 
@@ -169,11 +215,15 @@ Sir Boramir|A brave and noble knight."""
             raise ValueError("Empty response")
         return raw_text
 
-    def _apply_replacements(self, base_data: dict, raw_text: str, room_count: int) -> dict:
+    def _apply_replacements(self, base_data: dict, raw_text: str) -> dict:
         """Injects the LLM generated short lore into the base JSON structure"""
         lines = [line.strip() for line in raw_text.strip().split('\n') if '|' in line]
         
-        total_expected = room_count + 3 + 3 + 1  # rooms + items + npcs + player
+        room_count = len(base_data.get('rooms', []))
+        item_count = len(base_data.get('items', []))
+        npc_count = len(base_data.get('npcs', []))
+        total_expected = room_count + item_count + npc_count + 1
+
         if len(lines) < total_expected:
             raise ValueError(f"LLM produced incomplete data (expected {total_expected} lines, got {len(lines)}).")
 
@@ -194,7 +244,7 @@ Sir Boramir|A brave and noble knight."""
 
         # Items (start after rooms)
         items = base_data.get('items', [])
-        for i in range(min(3, len(items))):
+        for i in range(min(item_count, len(items))):
             idx = room_count + i
             if idx < len(lines):
                 parts = safe_split(lines[idx], 2)
@@ -204,11 +254,16 @@ Sir Boramir|A brave and noble knight."""
                     items[i]['stats']['damage'] = random.randint(15, 50)
                 elif items[i].get('item_type') == 'consumable':
                     items[i]['stats']['heal'] = random.randint(25, 60)
+                elif items[i].get('item_type') == 'armor':
+                    items[i]['stats']['defense'] = random.randint(5, 20)
+                # Randomize value a bit
+                base_val = items[i].get('value', 10)
+                items[i]['value'] = max(5, base_val + random.randint(-10, 15))
 
         # NPCs (start after rooms + items)
         npcs = base_data.get('npcs', [])
-        for i in range(min(3, len(npcs))):
-            idx = room_count + 3 + i
+        for i in range(min(npc_count, len(npcs))):
+            idx = room_count + item_count + i
             if idx < len(lines):
                 parts = safe_split(lines[idx], 3)
                 npcs[i]['name'] = parts[0]
@@ -220,11 +275,69 @@ Sir Boramir|A brave and noble knight."""
 
         # Player (last line)
         player = base_data.get('player', {})
-        player_idx = room_count + 3 + 3
+        player_idx = room_count + item_count + npc_count
         if player_idx < len(lines):
             parts = safe_split(lines[player_idx], 2)
             player['name'] = parts[0]
             player['description'] = parts[1]
             player['hp'] = random.randint(100, 200)
+            player['gold'] = random.randint(30, 80)
 
         return base_data
+
+    @staticmethod
+    def chat_with_npc(npc_name: str, npc_description: str, npc_type: str, user_message: str,
+                      model: str = None, base_url: str = None) -> str:
+        """Send a single chat message to an NPC via Ollama and return the streamed response."""
+        model = model or WorldGenerator.DEFAULT_MODEL
+        base_url = base_url or WorldGenerator.DEFAULT_BASE_URL
+
+        personality = ""
+        if npc_type == "hostile":
+            personality = "You are aggressive, threatening, and menacing. You speak in short, angry sentences. You might insult the player or threaten violence."
+        elif npc_type == "merchant":
+            personality = "You are a shrewd but friendly trader. You love talking about your wares and making deals. You speak with merchant charm."
+        else:
+            personality = "You are a friendly, helpful character. You may share rumors, advice, or lore about the world."
+
+        system_prompt = f"""You are '{npc_name}', a {npc_type} NPC in a medieval fantasy adventure game.
+Description: {npc_description}
+{personality}
+Rules:
+- Stay in character at ALL times.
+- Keep responses SHORT (1-2 sentences max).
+- NEVER break character or mention you are an AI.
+- React naturally to what the player says."""
+
+        request_body = json.dumps({
+            "model": model,
+            "prompt": user_message,
+            "system": system_prompt,
+            "stream": True,
+            "options": {
+                "temperature": 0.7,
+                "num_predict": 60
+            }
+        })
+
+        url = f"{base_url}/api/generate"
+        req = urllib.request.Request(
+            url,
+            data=request_body.encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+
+        full_response = []
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            for line in resp:
+                if line.strip():
+                    chunk = json.loads(line.decode("utf-8"))
+                    if "response" in chunk:
+                        token = chunk["response"]
+                        full_response.append(token)
+                        print(token, end="", flush=True)
+                    if chunk.get("done"):
+                        break
+
+        return "".join(full_response).strip()

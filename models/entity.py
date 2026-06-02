@@ -13,11 +13,12 @@ class Entity(ABC):
         pass
 
 class Player(Entity):
-    def __init__(self, e_id: str, name: str, description: str, current_room_id: str = None, hp: int = 100, previous_room_id: str = None):
+    def __init__(self, e_id: str, name: str, description: str, current_room_id: str = None, hp: int = 100, previous_room_id: str = None, gold: int = 50):
         super().__init__(e_id, name, description, hp)
         self.inventory = []
         self.current_room_id = current_room_id
         self.previous_room_id = previous_room_id
+        self.gold = gold
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -26,6 +27,7 @@ class Player(Entity):
             "name": self.name,
             "description": self.description,
             "hp": self.hp,
+            "gold": self.gold,
             "inventory": [item.id for item in self.inventory],
             "current_room_id": self.current_room_id,
             "previous_room_id": self.previous_room_id

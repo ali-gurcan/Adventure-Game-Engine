@@ -54,19 +54,24 @@ class TakeCommand(Command):
 class InventoryCommand(Command):
     def execute(self, args: list):
         player = self.engine_sys.state.player
-        print(f"HP: {c.hp_color(player.hp)}")
+        print(f"HP: {c.hp_color(player.hp)}  |  Gold: {c.gold(player.gold)}")
         if not player.inventory:
             print(c.dim("Your inventory is empty."))
         else:
             print(c.bold("You are carrying:"))
             for itm in player.inventory:
-                desc = ""
+                desc_parts = []
                 if itm.stats:
                     if "damage" in itm.stats:
-                        desc = f" ({c.damage('DMG:' + str(itm.stats['damage']))})"
-                    elif "heal" in itm.stats:
-                        desc = f" ({c.success('HEAL:' + str(itm.stats['heal']))})"
-                print(f"  - {c.item(itm.name)}{desc}")
+                        desc_parts.append(f"{c.damage('DMG:' + str(itm.stats['damage']))}")
+                    if "heal" in itm.stats:
+                        desc_parts.append(f"{c.success('HEAL:' + str(itm.stats['heal']))}")
+                    if "defense" in itm.stats:
+                        desc_parts.append(f"{c.defense_color('DEF:' + str(itm.stats['defense']))}")
+                if itm.value > 0:
+                    desc_parts.append(f"Value: {c.gold(itm.value)}")
+                extra = f" ({', '.join(desc_parts)})" if desc_parts else ""
+                print(f"  - {c.item(itm.name)}{extra}")
 
 class EscapeCommand(Command):
     def execute(self, args: list):
@@ -102,10 +107,23 @@ class InspectCommand(Command):
                         print(f"Damage: {c.damage(str(itm.stats['damage']))}")
                     if "heal" in itm.stats:
                         print(f"Heals: {c.success(str(itm.stats['heal']) + ' HP')}")
+                    if "defense" in itm.stats:
+                        print(f"Defense: {c.defense_color(str(itm.stats['defense']))}")
+                if itm.value > 0:
+                    print(f"Value: {c.gold(itm.value)}")
                 return
         print(c.dim("You don't see that to inspect."))
 
 class AttackCommand(Command):
+    def _get_player_defense(self):
+        """Calculate total defense from equipped armor in inventory."""
+        player = self.engine_sys.state.player
+        total_defense = 0
+        for itm in player.inventory:
+            if itm.item_type == "armor" and "defense" in itm.stats:
+                total_defense += itm.stats["defense"]
+        return total_defense
+
     def execute(self, args: list):
         if not args:
             print(c.warning("Attack who?"))
@@ -135,13 +153,25 @@ class AttackCommand(Command):
         
         if npc_target.hp <= 0:
             print(c.success(f"You defeated {npc_target.name}!"))
+            # Drop gold reward
+            gold_reward = getattr(npc_target, 'damage', 10) * 2
+            player.gold += gold_reward
+            print(f"  💰 You found {c.gold(gold_reward)} on the body!")
             room.npcs.remove(npc_target)
             self.engine_sys.event_bus.notify("npc_defeated", {"npc_id": npc_target.id})
         else:
             if npc_target.npc_type == "hostile":
                 ret_dmg = getattr(npc_target, 'damage', 10)
-                player.hp -= ret_dmg
-                print(f"{c.enemy(npc_target.name)} retaliates for {c.damage(str(ret_dmg))} damage! (Your HP: {c.hp_color(max(0, player.hp))})")
+                # Apply armor defense
+                defense = self._get_player_defense()
+                actual_dmg = max(1, ret_dmg - defense)
+                player.hp -= actual_dmg
+                if defense > 0:
+                    print(f"{c.enemy(npc_target.name)} retaliates for {c.damage(str(ret_dmg))} damage! "
+                          f"(Armor absorbs {c.defense_color(str(ret_dmg - actual_dmg))}. "
+                          f"You take {c.damage(str(actual_dmg))}. Your HP: {c.hp_color(max(0, player.hp))})")
+                else:
+                    print(f"{c.enemy(npc_target.name)} retaliates for {c.damage(str(actual_dmg))} damage! (Your HP: {c.hp_color(max(0, player.hp))})")
                 if player.hp <= 0:
                     print(c.error("You have been defeated... GAME OVER."))
                     self.engine_sys.can_play = False
@@ -171,6 +201,201 @@ class UseCommand(Command):
                     return
                     
         print(c.dim("You don't have that item in your inventory. Did you 'take' it first?"))
+
+
+class TalkCommand(Command):
+    """Interactive LLM-powered conversation with any NPC. Type 'bye' to exit."""
+
+    def execute(self, args: list):
+        if not args:
+            print(c.warning("Talk to whom?"))
+            return
+
+        target_name = " ".join(args).lower()
+        player = self.engine_sys.state.player
+        room = self.engine_sys.state.rooms.get(player.current_room_id)
+
+        npc_target = None
+        for n in room.npcs:
+            if n.name.lower() == target_name:
+                npc_target = n
+                break
+
+        if not npc_target:
+            print(c.dim("They aren't here."))
+            return
+
+        # Show initial static dialogue as greeting
+        npc_color = c.enemy if npc_target.npc_type == "hostile" else (c.merchant if npc_target.npc_type == "merchant" else c.info)
+        print(f"\n{npc_color(npc_target.name)}: \"{c.narration(npc_target.dialogue)}\"")
+        print(c.dim(f"(You are now talking to {npc_target.name}. Type 'bye' to end the conversation.)"))
+
+        # Interactive LLM dialogue loop
+        from engine.world_generator import WorldGenerator
+
+        while True:
+            try:
+                user_input = input(f"\n{c.BOLD_CYAN}You> {c.RESET}").strip()
+            except (EOFError, KeyboardInterrupt):
+                print(f"\n{c.dim('(Conversation ended.)')}")
+                break
+
+            if not user_input:
+                continue
+
+            if user_input.lower() in ("bye", "goodbye", "farewell", "leave"):
+                print(f"\n{npc_color(npc_target.name)}: \"{c.narration('Farewell, traveler.')}\"")
+                print(c.dim("(Conversation ended.)"))
+                break
+
+            # Stream the NPC's reply from Ollama
+            print(f"\n{npc_color(npc_target.name)}: \"", end="", flush=True)
+            try:
+                WorldGenerator.chat_with_npc(
+                    npc_name=npc_target.name,
+                    npc_description=npc_target.description,
+                    npc_type=npc_target.npc_type,
+                    user_message=user_input
+                )
+                print("\"")  # Close the quote
+            except Exception as e:
+                print(f"\"\n{c.dim(f'({npc_target.name} seems lost in thought... [{e}])')}")
+
+
+class BuyCommand(Command):
+    """Buy items from a merchant NPC in the current room."""
+
+    def execute(self, args: list):
+        if not args:
+            print(c.warning("Buy what? Check the merchant's wares first with 'shop'."))
+            return
+
+        item_name = " ".join(args).lower()
+        player = self.engine_sys.state.player
+        room = self.engine_sys.state.rooms.get(player.current_room_id)
+
+        # Find a merchant in the room
+        merchant_npc = None
+        for n in room.npcs:
+            if getattr(n, 'npc_type', 'neutral') == 'merchant':
+                merchant_npc = n
+                break
+
+        if not merchant_npc:
+            print(c.dim("There is no merchant here to buy from."))
+            return
+
+        # Find the item in the room
+        target_item = None
+        for itm in room.items:
+            if itm.name.lower() == item_name:
+                target_item = itm
+                break
+
+        if not target_item:
+            print(c.dim(f"The merchant doesn't have '{item_name}' for sale."))
+            return
+
+        price = target_item.value
+        if price <= 0:
+            price = 10  # Minimum price
+
+        if player.gold < price:
+            print(f"{c.merchant(merchant_npc.name)}: \"You don't have enough gold! This costs {c.gold(price)}.\"")
+            print(f"  Your gold: {c.gold(player.gold)}")
+            return
+
+        # Complete purchase
+        player.gold -= price
+        room.items.remove(target_item)
+        player.inventory.append(target_item)
+        print(f"  💰 You bought {c.item_bold(target_item.name)} for {c.gold(price)}!")
+        print(f"  Remaining gold: {c.gold(player.gold)}")
+
+
+class SellCommand(Command):
+    """Sell items to a merchant NPC in the current room."""
+
+    def execute(self, args: list):
+        if not args:
+            print(c.warning("Sell what? Check your inventory with 'inv'."))
+            return
+
+        item_name = " ".join(args).lower()
+        player = self.engine_sys.state.player
+        room = self.engine_sys.state.rooms.get(player.current_room_id)
+
+        # Find a merchant in the room
+        merchant_npc = None
+        for n in room.npcs:
+            if getattr(n, 'npc_type', 'neutral') == 'merchant':
+                merchant_npc = n
+                break
+
+        if not merchant_npc:
+            print(c.dim("There is no merchant here to sell to."))
+            return
+
+        # Find the item in inventory
+        target_item = None
+        for itm in player.inventory:
+            if itm.name.lower() == item_name:
+                target_item = itm
+                break
+
+        if not target_item:
+            print(c.dim(f"You don't have '{item_name}' in your inventory."))
+            return
+
+        sell_price = max(1, target_item.value // 2)  # Sell for half value
+
+        player.gold += sell_price
+        player.inventory.remove(target_item)
+        room.items.append(target_item)
+        print(f"  💰 You sold {c.item_bold(target_item.name)} for {c.gold(sell_price)}!")
+        print(f"  Current gold: {c.gold(player.gold)}")
+
+
+class ShopCommand(Command):
+    """Show the merchant's available wares in the current room."""
+
+    def execute(self, args: list):
+        player = self.engine_sys.state.player
+        room = self.engine_sys.state.rooms.get(player.current_room_id)
+
+        # Find a merchant in the room
+        merchant_npc = None
+        for n in room.npcs:
+            if getattr(n, 'npc_type', 'neutral') == 'merchant':
+                merchant_npc = n
+                break
+
+        if not merchant_npc:
+            print(c.dim("There is no merchant here."))
+            return
+
+        shop_title = "═══ " + merchant_npc.name + "'s Shop ═══"
+        print(f"\n{c.merchant(shop_title)}")
+        print(f"Your gold: {c.gold(player.gold)}\n")
+
+        if not room.items:
+            print(c.dim("  The merchant has nothing left to sell."))
+        else:
+            for itm in room.items:
+                price = itm.value if itm.value > 0 else 10
+                stats_str = ""
+                if itm.stats:
+                    parts = []
+                    if "damage" in itm.stats:
+                        parts.append(f"DMG:{itm.stats['damage']}")
+                    if "heal" in itm.stats:
+                        parts.append(f"HEAL:{itm.stats['heal']}")
+                    if "defense" in itm.stats:
+                        parts.append(f"DEF:{itm.stats['defense']}")
+                    stats_str = f" ({', '.join(parts)})" if parts else ""
+                print(f"  {c.item(itm.name)}{stats_str} — {c.gold(price)}")
+
+        print(f"\n{c.dim('Use \"buy <item>\" to purchase or \"sell <item>\" to sell.')}")
 
 
 class MapCommand(Command):

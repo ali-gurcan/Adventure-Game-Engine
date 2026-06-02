@@ -38,7 +38,7 @@ class GameState:
     def load_from_dict(self, data: dict) -> bool:
         """Load game state from a dictionary (used by both file loading and LLM generation)."""
         try:
-            self.items = {i['id']: Item(i['id'], i['name'], i['description'], i.get('item_type', 'misc'), i.get('stats', {})) for i in data.get('items', [])}
+            self.items = {i['id']: Item(i['id'], i['name'], i['description'], i.get('item_type', 'misc'), i.get('stats', {}), i.get('value', 0)) for i in data.get('items', [])}
             self.npcs = {n['id']: NPC(n['id'], n['name'], n['description'], n.get('dialogue', ''), n.get('npc_type', 'neutral'), n.get('damage', 0), n.get('hp', 100)) for n in data.get('npcs', [])}
             
             self.rooms = {}
@@ -55,7 +55,7 @@ class GameState:
 
             p_data = data.get('player')
             if p_data:
-                self.player = Player(p_data['id'], p_data['name'], p_data['description'], p_data.get('current_room_id'), p_data.get('hp', 100), p_data.get('previous_room_id'))
+                self.player = Player(p_data['id'], p_data['name'], p_data['description'], p_data.get('current_room_id'), p_data.get('hp', 100), p_data.get('previous_room_id'), p_data.get('gold', 50))
                 for item_id in p_data.get('inventory', []):
                     if item_id in self.items:
                         self.player.inventory.append(self.items[item_id])

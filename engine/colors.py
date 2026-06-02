@@ -88,3 +88,15 @@ def bold(text: str) -> str:
 def dim(text: str) -> str:
     """Dim text."""
     return f"{DIM}{text}{RESET}"
+
+def gold(amount) -> str:
+    """Bold Yellow — for gold amounts."""
+    return f"{BOLD_YELLOW}{amount}g{RESET}"
+
+def merchant(text: str) -> str:
+    """Magenta — for merchant names and trade messages."""
+    return f"{MAGENTA}{text}{RESET}"
+
+def defense_color(text: str) -> str:
+    """Cyan — for defense/armor values."""
+    return f"{CYAN}{text}{RESET}"
