@@ -1,32 +1,13 @@
 from abc import ABC, abstractmethod
 from engine import colors as c
+from engine.ui import console, print_hp_bar
+from engine.map_renderer import MapRenderer
+from engine.quest_system import QuestSystem
+from rich.table import Table
+from rich.panel import Panel
 
-
-def _check_quest_completion(engine_sys, event_type: str, target_id: str):
-    """Shared helper: checks if any active quest is completed by this event."""
-    player = engine_sys.state.player
-    quests = engine_sys.state.quests
-
-    for q_id in list(player.active_quests):
-        quest = quests.get(q_id)
-        if not quest or quest.status != 'active':
-            continue
-
-        completed = False
-        if quest.quest_type == 'kill' and event_type == 'npc_killed' and quest.target_id == target_id:
-            completed = True
-        elif quest.quest_type == 'collect' and event_type == 'item_taken' and quest.target_id == target_id:
-            completed = True
-        # 'deliver' is handled separately in TalkCommand
-
-        if completed:
-            quest.status = 'completed'
-            player.active_quests.remove(q_id)
-            player.completed_quests.append(q_id)
-            player.gold += quest.reward_gold
-            print(f"\n{c.success('✨ QUEST COMPLETED!')} {c.bold(quest.name)}")
-            print(f"  {c.narration(quest.description)}")
-            print(f"  💰 Reward: {c.gold(quest.reward_gold)}")
+# Alias print to console.print for easy migration
+print = console.print
 
 class Command(ABC):
     def __init__(self, engine_sys):
@@ -69,25 +50,32 @@ class TakeCommand(Command):
         item_name = " ".join(args).lower()
         room = self.engine_sys.state.rooms.get(self.engine_sys.state.player.current_room_id)
         
-        for itm in list(room.items):
-            if itm.name.lower() == item_name:
-                room.items.remove(itm)
-                self.engine_sys.state.player.inventory.append(itm)
-                print(f"You picked up the {c.item_bold(itm.name)}.")
-                self.engine_sys.event_bus.notify("item_taken", {"item_id": itm.id})
-                # Check collect quests
-                _check_quest_completion(self.engine_sys, 'item_taken', itm.id)
-                return
-        print(c.dim("I don't see that here."))
+        itm = room.get_item_by_name(item_name)
+        if itm:
+            room.items.remove(itm)
+            self.engine_sys.state.player.inventory.append(itm)
+            print(f"You picked up the {c.item_bold(itm.name)}.")
+            self.engine_sys.event_bus.notify("item_taken", {"item_id": itm.id})
+            # Check collect quests
+            QuestSystem.check_quest_completion(self.engine_sys, 'item_taken', itm.id)
+        else:
+            print(c.dim("I don't see that here."))
 
 class InventoryCommand(Command):
     def execute(self, args: list):
         player = self.engine_sys.state.player
-        print(f"HP: {c.hp_color(player.hp)}  |  Gold: {c.gold(player.gold)}")
+        console.print(print_hp_bar(player.hp, max_hp=200, label="HP"))
+        console.print(f"💰 Gold: {c.gold(player.gold)}\n")
+        
         if not player.inventory:
-            print(c.dim("Your inventory is empty."))
+            console.print(c.dim("Your inventory is empty."))
         else:
-            print(c.bold("You are carrying:"))
+            table = Table(title="Your Inventory", show_header=True, header_style="bold magenta")
+            table.add_column("Item", style="yellow")
+            table.add_column("Type", justify="center")
+            table.add_column("Stats", justify="left")
+            table.add_column("Value", justify="right")
+            
             for itm in player.inventory:
                 desc_parts = []
                 if itm.stats:
@@ -97,10 +85,13 @@ class InventoryCommand(Command):
                         desc_parts.append(f"{c.success('HEAL:' + str(itm.stats['heal']))}")
                     if "defense" in itm.stats:
                         desc_parts.append(f"{c.defense_color('DEF:' + str(itm.stats['defense']))}")
-                if itm.value > 0:
-                    desc_parts.append(f"Value: {c.gold(itm.value)}")
-                extra = f" ({', '.join(desc_parts)})" if desc_parts else ""
-                print(f"  - {c.item(itm.name)}{extra}")
+                
+                stats_str = ", ".join(desc_parts) if desc_parts else "-"
+                val_str = str(itm.value) + "g" if itm.value > 0 else "-"
+                
+                table.add_row(itm.name, itm.item_type.capitalize(), stats_str, val_str)
+            
+            console.print(table)
 
 class EscapeCommand(Command):
     def execute(self, args: list):
@@ -126,33 +117,24 @@ class InspectCommand(Command):
         room = self.engine_sys.state.rooms.get(player.current_room_id)
         
         # Check inventory first, then room
-        items_to_check = player.inventory + room.items
-        for itm in items_to_check:
-            if itm.name.lower() == target:
-                print(f"--- {c.item_bold(itm.name)} ---")
-                print(c.narration(itm.description))
-                if itm.stats:
-                    if "damage" in itm.stats:
-                        print(f"Damage: {c.damage(str(itm.stats['damage']))}")
-                    if "heal" in itm.stats:
-                        print(f"Heals: {c.success(str(itm.stats['heal']) + ' HP')}")
-                    if "defense" in itm.stats:
-                        print(f"Defense: {c.defense_color(str(itm.stats['defense']))}")
-                if itm.value > 0:
-                    print(f"Value: {c.gold(itm.value)}")
-                return
-        print(c.dim("You don't see that to inspect."))
+        itm = player.get_item_by_name(target) or room.get_item_by_name(target)
+        
+        if itm:
+            print(f"--- {c.item_bold(itm.name)} ---")
+            print(c.narration(itm.description))
+            if itm.stats:
+                if "damage" in itm.stats:
+                    print(f"Damage: {c.damage(str(itm.stats['damage']))}")
+                if "heal" in itm.stats:
+                    print(f"Heals: {c.success(str(itm.stats['heal']) + ' HP')}")
+                if "defense" in itm.stats:
+                    print(f"Defense: {c.defense_color(str(itm.stats['defense']))}")
+            if itm.value > 0:
+                print(f"Value: {c.gold(itm.value)}")
+        else:
+            print(c.dim("You don't see that to inspect."))
 
 class AttackCommand(Command):
-    def _get_player_defense(self):
-        """Calculate total defense from equipped armor in inventory."""
-        player = self.engine_sys.state.player
-        total_defense = 0
-        for itm in player.inventory:
-            if itm.item_type == "armor" and "defense" in itm.stats:
-                total_defense += itm.stats["defense"]
-        return total_defense
-
     def execute(self, args: list):
         if not args:
             print(c.warning("Attack who?"))
@@ -161,22 +143,13 @@ class AttackCommand(Command):
         player = self.engine_sys.state.player
         room = self.engine_sys.state.rooms.get(player.current_room_id)
         
-        npc_target = None
-        for n in room.npcs:
-            if n.name.lower() == target:
-                npc_target = n
-                break
+        npc_target = room.get_npc_by_name(target)
                 
         if not npc_target:
             print(c.dim("They aren't here."))
             return
 
-        # Calculate player damage (find highest weapon)
-        dmg = 5 # base punch damage
-        for itm in player.inventory:
-            if itm.item_type == "weapon" and itm.stats.get("damage", 0) > dmg:
-                dmg = itm.stats["damage"]
-
+        dmg = player.get_total_damage()
         npc_target.hp -= dmg
         print(f"You attack {c.enemy(npc_target.name)} for {c.damage(str(dmg))} damage! (Enemy HP: {c.damage(str(max(0, npc_target.hp)))})")
         
@@ -189,12 +162,12 @@ class AttackCommand(Command):
             room.npcs.remove(npc_target)
             self.engine_sys.event_bus.notify("npc_defeated", {"npc_id": npc_target.id})
             # Check kill quests
-            _check_quest_completion(self.engine_sys, 'npc_killed', npc_target.id)
+            QuestSystem.check_quest_completion(self.engine_sys, 'npc_killed', npc_target.id)
         else:
             if npc_target.npc_type == "hostile":
                 ret_dmg = getattr(npc_target, 'damage', 10)
                 # Apply armor defense
-                defense = self._get_player_defense()
+                defense = player.get_total_defense()
                 actual_dmg = max(1, ret_dmg - defense)
                 player.hp -= actual_dmg
                 if defense > 0:
@@ -216,22 +189,20 @@ class UseCommand(Command):
         target = " ".join(args).lower()
         player = self.engine_sys.state.player
         
-        for itm in list(player.inventory):
-            if itm.name.lower() == target:
-                if getattr(itm, 'item_type', 'misc') == "consumable":
-                    heal_amount = getattr(itm, 'stats', {}).get("heal", 0)
-                    if heal_amount > 0:
-                        player.hp = min(200, player.hp + heal_amount)
-                        player.inventory.remove(itm)
-                        print(f"You consumed the {c.item_bold(itm.name)}. It healed you for {c.success(str(heal_amount))} HP! (Current HP: {c.hp_color(player.hp)})")
-                    else:
-                        print(f"You used the {c.item(itm.name)}, but nothing happened.")
-                    return
+        itm = player.get_item_by_name(target)
+        if itm:
+            if getattr(itm, 'item_type', 'misc') == "consumable":
+                heal_amount = getattr(itm, 'stats', {}).get("heal", 0)
+                if heal_amount > 0:
+                    player.hp = min(200, player.hp + heal_amount)
+                    player.inventory.remove(itm)
+                    print(f"You consumed the {c.item_bold(itm.name)}. It healed you for {c.success(str(heal_amount))} HP! (Current HP: {c.hp_color(player.hp)})")
                 else:
-                    print(f"You can't consume or use the {c.item(itm.name)} that way.")
-                    return
-                    
-        print(c.dim("You don't have that item in your inventory. Did you 'take' it first?"))
+                    print(f"You used the {c.item(itm.name)}, but nothing happened.")
+            else:
+                print(f"You can't consume or use the {c.item(itm.name)} that way.")
+        else:
+            print(c.dim("You don't have that item in your inventory. Did you 'take' it first?"))
 
 
 class TalkCommand(Command):
@@ -252,11 +223,11 @@ class TalkCommand(Command):
                 continue
 
             # Offer the quest
-            print(f"\n{c.BOLD_CYAN}📜 QUEST AVAILABLE:{c.RESET} {c.bold(quest.name)}")
-            print(f"   {c.narration(quest.description)}")
-            print(f"   Reward: {c.gold(quest.reward_gold)}")
+            console.print(f"\n[bold cyan]📜 QUEST AVAILABLE:[/] {c.bold(quest.name)}")
+            console.print(f"   {c.narration(quest.description)}")
+            console.print(f"   Reward: {c.gold(quest.reward_gold)}")
             try:
-                answer = input(f"   Accept this quest? ({c.success('yes')}/{c.damage('no')}): ").strip().lower()
+                answer = console.input(f"   Accept this quest? ([bold green]yes[/]/[red]no[/]): ").strip().lower()
             except (EOFError, KeyboardInterrupt):
                 answer = 'no'
 
@@ -283,22 +254,11 @@ class TalkCommand(Command):
                 continue
 
             # Check if player has the required item
-            has_item = any(itm.id == quest.target_id for itm in player.inventory)
-            if has_item:
-                # Remove item from inventory
-                for itm in list(player.inventory):
-                    if itm.id == quest.target_id:
-                        player.inventory.remove(itm)
-                        print(f"\n  You hand over the {c.item_bold(itm.name)} to {npc_color(npc_target.name)}.")
-                        break
-
-                quest.status = 'completed'
-                player.active_quests.remove(q_id)
-                player.completed_quests.append(q_id)
-                player.gold += quest.reward_gold
-                print(f"\n{c.success('✨ QUEST COMPLETED!')} {c.bold(quest.name)}")
-                print(f"  {c.narration(quest.description)}")
-                print(f"  💰 Reward: {c.gold(quest.reward_gold)}")
+            itm = player.get_item_by_name(quest.target_id)
+            if itm:
+                player.inventory.remove(itm)
+                print(f"\n  You hand over the {c.item_bold(itm.name)} to {npc_color(npc_target.name)}.")
+                QuestSystem.complete_quest(player, quest)
 
     def execute(self, args: list):
         if not args:
@@ -309,11 +269,7 @@ class TalkCommand(Command):
         player = self.engine_sys.state.player
         room = self.engine_sys.state.rooms.get(player.current_room_id)
 
-        npc_target = None
-        for n in room.npcs:
-            if n.name.lower() == target_name:
-                npc_target = n
-                break
+        npc_target = room.get_npc_by_name(target_name)
 
         if not npc_target:
             print(c.dim("They aren't here."))
@@ -329,14 +285,13 @@ class TalkCommand(Command):
         # Offer available quests from this NPC
         self._offer_quests(npc_target, npc_color)
 
-        print(c.dim(f"(You are now talking to {npc_target.name}. Type 'bye' to end the conversation.)"))
-
-        # Interactive LLM dialogue loop
+        # Enter interactive chat loop
+        console.print(f"(You are now talking to {npc_target.name}. Type 'bye' to end the conversation.)")
         from engine.world_generator import WorldGenerator
 
         while True:
             try:
-                user_input = input(f"\n{c.BOLD_CYAN}You> {c.RESET}").strip()
+                user_input = console.input("\n[bold cyan]You>[/] ").strip()
             except (EOFError, KeyboardInterrupt):
                 print(f"\n{c.dim('(Conversation ended.)')}")
                 break
@@ -350,7 +305,7 @@ class TalkCommand(Command):
                 break
 
             # Stream the NPC's reply from Ollama
-            print(f"\n{npc_color(npc_target.name)}: \"", end="", flush=True)
+            console.print(f"\n{npc_color(npc_target.name)}: \"", end="")
             try:
                 WorldGenerator.chat_with_npc(
                     npc_name=npc_target.name,
@@ -375,23 +330,13 @@ class BuyCommand(Command):
         player = self.engine_sys.state.player
         room = self.engine_sys.state.rooms.get(player.current_room_id)
 
-        # Find a merchant in the room
-        merchant_npc = None
-        for n in room.npcs:
-            if getattr(n, 'npc_type', 'neutral') == 'merchant':
-                merchant_npc = n
-                break
+        merchant_npc = room.get_merchant()
 
         if not merchant_npc:
             print(c.dim("There is no merchant here to buy from."))
             return
 
-        # Find the item in the room
-        target_item = None
-        for itm in room.items:
-            if itm.name.lower() == item_name:
-                target_item = itm
-                break
+        target_item = room.get_item_by_name(item_name)
 
         if not target_item:
             print(c.dim(f"The merchant doesn't have '{item_name}' for sale."))
@@ -426,23 +371,13 @@ class SellCommand(Command):
         player = self.engine_sys.state.player
         room = self.engine_sys.state.rooms.get(player.current_room_id)
 
-        # Find a merchant in the room
-        merchant_npc = None
-        for n in room.npcs:
-            if getattr(n, 'npc_type', 'neutral') == 'merchant':
-                merchant_npc = n
-                break
+        merchant_npc = room.get_merchant()
 
         if not merchant_npc:
             print(c.dim("There is no merchant here to sell to."))
             return
 
-        # Find the item in inventory
-        target_item = None
-        for itm in player.inventory:
-            if itm.name.lower() == item_name:
-                target_item = itm
-                break
+        target_item = player.get_item_by_name(item_name)
 
         if not target_item:
             print(c.dim(f"You don't have '{item_name}' in your inventory."))
@@ -458,181 +393,55 @@ class SellCommand(Command):
 
 
 class ShopCommand(Command):
-    """Show the merchant's available wares in the current room."""
+    """View items available to buy in the current room."""
 
     def execute(self, args: list):
         player = self.engine_sys.state.player
         room = self.engine_sys.state.rooms.get(player.current_room_id)
 
-        # Find a merchant in the room
-        merchant_npc = None
-        for n in room.npcs:
-            if getattr(n, 'npc_type', 'neutral') == 'merchant':
-                merchant_npc = n
-                break
+        merchant_npc = room.get_merchant()
 
         if not merchant_npc:
             print(c.dim("There is no merchant here."))
             return
 
-        shop_title = "═══ " + merchant_npc.name + "'s Shop ═══"
-        print(f"\n{c.merchant(shop_title)}")
+        print(f"\n{c.merchant('═══ ' + merchant_npc.name + '\'s Shop ═══')}")
         print(f"Your gold: {c.gold(player.gold)}\n")
 
-        if not room.items:
-            print(c.dim("  The merchant has nothing left to sell."))
-        else:
-            for itm in room.items:
-                price = itm.value if itm.value > 0 else 10
-                stats_str = ""
-                if itm.stats:
-                    parts = []
-                    if "damage" in itm.stats:
-                        parts.append(f"DMG:{itm.stats['damage']}")
-                    if "heal" in itm.stats:
-                        parts.append(f"HEAL:{itm.stats['heal']}")
-                    if "defense" in itm.stats:
-                        parts.append(f"DEF:{itm.stats['defense']}")
-                    stats_str = f" ({', '.join(parts)})" if parts else ""
-                print(f"  {c.item(itm.name)}{stats_str} — {c.gold(price)}")
+        wares = self.engine_sys.state.items
+        shop_items = [itm for itm in wares.values() if itm.value > 0 and itm.item_type != 'misc']
+        shop_items = shop_items[:5]
 
-        print(f"\n{c.dim('Use \"buy <item>\" to purchase or \"sell <item>\" to sell.')}")
+        if not shop_items:
+            print(c.dim("The merchant has nothing to sell right now."))
+            return
+
+        table = Table(show_header=True, header_style="bold magenta")
+        table.add_column("Item", style="yellow")
+        table.add_column("Stats", justify="left")
+        table.add_column("Price", justify="right")
+
+        for itm in shop_items:
+            desc_parts = []
+            if itm.stats:
+                if "damage" in itm.stats:
+                    desc_parts.append(f"{c.damage('DMG:' + str(itm.stats['damage']))}")
+                if "heal" in itm.stats:
+                    desc_parts.append(f"{c.success('HEAL:' + str(itm.stats['heal']))}")
+                if "defense" in itm.stats:
+                    desc_parts.append(f"{c.defense_color('DEF:' + str(itm.stats['defense']))}")
+            stats_str = ", ".join(desc_parts) if desc_parts else "-"
+            table.add_row(itm.name, stats_str, f"{itm.value}g")
+
+        console.print(table)
+        print(c.dim("\nUse 'buy <item>' to purchase or 'sell <item>' to sell."))
 
 
 class MapCommand(Command):
     """Renders an ASCII map of the world graph, highlighting the player's current room."""
 
-    DIR_OFFSETS = {
-        "north": (-1, 0),
-        "south": (1, 0),
-        "east": (0, 1),
-        "west": (0, -1),
-    }
-
     def execute(self, args: list):
-        state = self.engine_sys.state
-        if not state.rooms:
-            print("No map data available.")
-            return
-
-        # 1. Place rooms on a grid using BFS from the player's current room
-        grid = {}
-        placed = {}
-        queue = [state.player.current_room_id]
-        placed[state.player.current_room_id] = (0, 0)
-        grid[(0, 0)] = state.rooms[state.player.current_room_id]
-
-        while queue:
-            current_id = queue.pop(0)
-            current_pos = placed[current_id]
-            room = state.rooms.get(current_id)
-            if not room:
-                continue
-
-            for direction, target_id in room.exits.items():
-                if target_id in placed:
-                    continue
-                offset = self.DIR_OFFSETS.get(direction)
-                if not offset:
-                    continue
-                new_pos = (current_pos[0] + offset[0], current_pos[1] + offset[1])
-
-                attempts = 0
-                while new_pos in grid and attempts < 5:
-                    new_pos = (new_pos[0] + offset[0], new_pos[1] + offset[1])
-                    attempts += 1
-
-                if new_pos not in grid and target_id in state.rooms:
-                    grid[new_pos] = state.rooms[target_id]
-                    placed[target_id] = new_pos
-                    queue.append(target_id)
-
-        max_col = max(col for _, col in grid.keys()) if grid else 0
-        for room_id, room in state.rooms.items():
-            if room_id not in placed:
-                max_col += 2
-                pos = (0, max_col)
-                grid[pos] = room
-                placed[room_id] = pos
-
-        min_r = min(r for r, _ in grid.keys())
-        max_r = max(r for r, _ in grid.keys())
-        min_c = min(col for _, col in grid.keys())
-        max_c = max(col for _, col in grid.keys())
-
-        CELL_W = 22
-        CELL_H = 3
-        CONN_H = 1
-        CONN_W = 4
-
-        total_cols = max_c - min_c + 1
-        total_rows = max_r - min_r + 1
-        canvas_w = total_cols * CELL_W + (total_cols - 1) * CONN_W
-        canvas_h = total_rows * CELL_H + (total_rows - 1) * CONN_H
-
-        canvas = [[" "] * canvas_w for _ in range(canvas_h)]
-
-        def draw_text(row, col, text):
-            for i, ch in enumerate(text):
-                if 0 <= row < canvas_h and 0 <= col + i < canvas_w:
-                    canvas[row][col + i] = ch
-
-        player_room_id = state.player.current_room_id
-
-        for (gr, gc), room in grid.items():
-            canvas_col = (gc - min_c) * (CELL_W + CONN_W)
-            canvas_row = (gr - min_r) * (CELL_H + CONN_H)
-
-            is_current = (room.id == player_room_id)
-            name = room.name[:CELL_W - 4]
-            if is_current:
-                label = f"[*{name}*]"
-            else:
-                label = f"[ {name} ]"
-
-            padded = label.center(CELL_W)
-
-            draw_text(canvas_row, canvas_col, "+" + "-" * (CELL_W - 2) + "+")
-            draw_text(canvas_row + 1, canvas_col, "|" + padded[1:-1] + "|")
-            draw_text(canvas_row + 2, canvas_col, "+" + "-" * (CELL_W - 2) + "+")
-
-            for direction, target_id in room.exits.items():
-                if target_id not in placed:
-                    continue
-
-                if direction == "south":
-                    cx = canvas_col + CELL_W // 2
-                    cy = canvas_row + CELL_H
-                    if 0 <= cy < canvas_h:
-                        draw_text(cy, cx, "|")
-                elif direction == "north":
-                    cx = canvas_col + CELL_W // 2
-                    cy = canvas_row - 1
-                    if 0 <= cy < canvas_h:
-                        draw_text(cy, cx, "|")
-                elif direction == "east":
-                    cx = canvas_col + CELL_W
-                    cy = canvas_row + 1
-                    for i in range(CONN_W):
-                        if 0 <= cx + i < canvas_w:
-                            draw_text(cy, cx + i, "-")
-                elif direction == "west":
-                    cx = canvas_col - CONN_W
-                    cy = canvas_row + 1
-                    for i in range(CONN_W):
-                        if 0 <= cx + i < canvas_w:
-                            draw_text(cy, cx + i, "-")
-
-        # Print the colored map
-        print(f"\n{c.BOLD_CYAN}🗺️  WORLD MAP{c.RESET}  {c.dim('(You are at [*...*])')}")
-        print(c.DIM + "=" * min(canvas_w, 60) + c.RESET)
-        for row in canvas:
-            line = "".join(row).rstrip()
-            if line:
-                # Color the current room marker
-                line = line.replace("[*", f"{c.BOLD_GREEN}[*").replace("*]", f"*]{c.RESET}")
-                print(line)
-        print(c.DIM + "=" * min(canvas_w, 60) + c.RESET)
+        MapRenderer.render(self.engine_sys.state)
 
 
 class QuestsCommand(Command):
@@ -642,45 +451,45 @@ class QuestsCommand(Command):
         player = self.engine_sys.state.player
         quests = self.engine_sys.state.quests
 
-        print(f"\n{c.BOLD_CYAN}📜 QUEST JOURNAL{c.RESET}")
-        print(c.DIM + "=" * 40 + c.RESET)
-
-        # Active quests
         active = [quests[q_id] for q_id in player.active_quests if q_id in quests]
         if active:
-            print(f"\n{c.bold('Active Quests:')}")
+            table = Table(title="📜 Active Quests", show_header=True, header_style="bold cyan", expand=True)
+            table.add_column("Type", justify="center", style="bold")
+            table.add_column("Quest", style="yellow")
+            table.add_column("Description", style="italic white")
+            table.add_column("Status", justify="center")
+            table.add_column("Reward", justify="right")
+
             for quest in active:
                 type_icon = {"kill": "⚔️", "collect": "🎒", "deliver": "📦"}.get(quest.quest_type, "❓")
-                print(f"  {type_icon} {c.warning(quest.name)}")
-                print(f"     {c.narration(quest.description)}")
+                
                 # Show progress hint
                 if quest.quest_type == "kill":
                     target_alive = quest.target_id in self.engine_sys.state.npcs
                     status = c.damage("Not defeated yet") if target_alive else c.success("Target eliminated!")
-                    print(f"     Status: {status}")
                 elif quest.quest_type == "collect":
                     has_item = any(itm.id == quest.target_id for itm in player.inventory)
                     status = c.success("Item collected!") if has_item else c.damage("Item not found yet")
-                    print(f"     Status: {status}")
                 elif quest.quest_type == "deliver":
                     has_item = any(itm.id == quest.target_id for itm in player.inventory)
                     if has_item:
-                        # Find deliver target name
                         deliver_npc = self.engine_sys.state.npcs.get(quest.deliver_to)
                         npc_name = deliver_npc.name if deliver_npc else quest.deliver_to
                         status = c.warning(f"Deliver to {npc_name}")
                     else:
                         status = c.damage("Item not found yet")
-                    print(f"     Status: {status}")
-                print(f"     Reward: {c.gold(quest.reward_gold)}")
+                
+                table.add_row(type_icon, quest.name, quest.description, status, f"{quest.reward_gold}g")
+            console.print(table)
         else:
-            print(f"\n{c.dim('No active quests. Talk to NPCs to find quests!')}")
+            console.print(Panel("No active quests. Talk to NPCs to find quests!", title="📜 Quest Journal", border_style="dim"))
 
         # Completed quests
         completed = [quests[q_id] for q_id in player.completed_quests if q_id in quests]
         if completed:
-            print(f"\n{c.bold('Completed Quests:')}")
+            comp_table = Table(title="✅ Completed Quests", show_header=False, header_style="bold green")
+            comp_table.add_column("Icon")
+            comp_table.add_column("Quest", style="dim")
             for quest in completed:
-                print(f"  ✅ {c.dim(quest.name)}")
-
-        print(c.DIM + "\n" + "=" * 40 + c.RESET)
+                comp_table.add_row("✅", quest.name)
+            console.print(comp_table)

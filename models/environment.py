@@ -18,6 +18,26 @@ class Room:
     def add_npc(self, npc):
         self.npcs.append(npc)
 
+    def get_item_by_name(self, name: str):
+        name = name.lower()
+        for itm in self.items:
+            if itm.name.lower() == name:
+                return itm
+        return None
+
+    def get_npc_by_name(self, name: str):
+        name = name.lower()
+        for npc in self.npcs:
+            if npc.name.lower() == name:
+                return npc
+        return None
+
+    def get_merchant(self):
+        for npc in self.npcs:
+            if getattr(npc, 'npc_type', 'neutral') == 'merchant':
+                return npc
+        return None
+
     def to_dict(self):
         return {
             "id": self.id,

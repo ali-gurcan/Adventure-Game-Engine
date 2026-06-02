@@ -2,8 +2,8 @@
     "rooms": [
         {
             "id": "room_village",
-            "name": "Tower Keep",
-            "description": "Ancient stone fortress remains. Exits: 'north', 'east'.",
+            "name": "Dark Forest",
+            "description": "Shadowy woods, creepy noises. Exits: 'north', 'east'.",
             "x": 0,
             "y": 1,
             "exits": {
@@ -17,8 +17,8 @@
         },
         {
             "id": "room_market",
-            "name": "Forest Glade",
-            "description": "A sunny woodland clearing. Exits: 'west', 'north'.",
+            "name": "Abandoned Mine",
+            "description": "Dusty old mining shaft. Exits: 'west', 'north'.",
             "x": 1,
             "y": 1,
             "exits": {
@@ -35,8 +35,8 @@
         },
         {
             "id": "room_forest",
-            "name": "Dark Cave",
-            "description": "Damp, dark underground space. Exits: 'south', 'east', 'north'.",
+            "name": "Tomb of Kings",
+            "description": "Grand ancient tombs. Exits: 'south', 'east', 'north'.",
             "x": 0,
             "y": 0,
             "exits": {
@@ -53,8 +53,8 @@
         },
         {
             "id": "room_tower",
-            "name": "Abandoned Mine",
-            "description": "Old mine tunnels collapse nearby. Exits: 'west', 'south'.",
+            "name": "Haunted Mansion",
+            "description": "Spooky abandoned castle. Exits: 'west', 'south'.",
             "x": 1,
             "y": 0,
             "exits": {
@@ -70,8 +70,8 @@
         },
         {
             "id": "room_cave",
-            "name": "Haunted Mansion",
-            "description": "Creepy abandoned house looms. Exits: 'south'.",
+            "name": "Wizard Tower",
+            "description": "A tall magical spire. Exits: 'south'.",
             "x": 0,
             "y": -1,
             "exits": {
@@ -86,93 +86,93 @@
     "items": [
         {
             "id": "item_apple",
-            "name": "Healing Potion",
-            "description": "Glowing blue magical elixir.",
+            "name": "Rusty Key",
+            "description": "An old metal key shape.",
             "item_type": "consumable",
             "stats": {
-                "heal": 31
+                "heal": 39
             },
-            "value": 9
+            "value": 5
         },
         {
             "id": "item_sword",
-            "name": "Enchanted Cloak",
-            "description": "Magical cloak glows softly.",
+            "name": "Mithril Ingot",
+            "description": "Melted silver-white metal.",
             "item_type": "weapon",
             "stats": {
-                "damage": 46
+                "damage": 20
             },
             "value": 42
         },
         {
             "id": "item_wand",
-            "name": "Mystic Crystal",
-            "description": "Rare and precious crystal shard.",
+            "name": "Enchanted Quill",
+            "description": "Glowing ink-wielding quill.",
             "item_type": "weapon",
             "stats": {
-                "damage": 20
+                "damage": 44
             },
-            "value": 71
+            "value": 75
         },
         {
             "id": "item_shield",
-            "name": "Golden Chalice",
-            "description": "Shiny ornate drinking vessel.",
+            "name": "Crystal Orb",
+            "description": "Shining crystal ball.",
             "item_type": "armor",
             "stats": {
-                "defense": 6
+                "defense": 9
             },
-            "value": 43
+            "value": 37
         },
         {
             "id": "item_potion",
-            "name": "Rusty Gauntlets",
-            "description": "Crusted with dirt and metal.",
+            "name": "Magic Scroll",
+            "description": "Tattered mysterious parchment.",
             "item_type": "consumable",
             "stats": {
-                "heal": 49
+                "heal": 47
             },
-            "value": 42
+            "value": 27
         }
     ],
     "npcs": [
         {
             "id": "npc_villager",
             "type": "NPC",
-            "name": "Villager",
-            "description": "A scared looking man.",
-            "hp": 180,
-            "dialogue": "Please help us!",
+            "name": "Goblin King",
+            "description": "A fierce green monster.",
+            "hp": 177,
+            "dialogue": "Die, human!",
             "npc_type": "neutral",
             "damage": 0
         },
         {
             "id": "npc_merchant",
             "type": "NPC",
-            "name": "Goblin King",
-            "description": "Ugly green monster.",
-            "hp": 160,
-            "dialogue": "Argh! Die now!",
+            "name": "Elven Archer",
+            "description": "Elegant elf with bow.",
+            "hp": 198,
+            "dialogue": "You're a threat!",
             "npc_type": "merchant",
             "damage": 0
         },
         {
             "id": "npc_goblin",
             "type": "NPC",
-            "name": "Wizard Zorvath",
-            "description": "Ancient powerful wizard.",
-            "hp": 68,
-            "dialogue": "Seek my aid.",
+            "name": "Wizardess Zara",
+            "description": "Mystical old woman.",
+            "hp": 115,
+            "dialogue": "Follow me!",
             "npc_type": "hostile",
-            "damage": 25
+            "damage": 11
         },
         {
             "id": "npc_wizard",
             "type": "NPC",
-            "name": "Sir Valoric",
-            "description": "Brave young knight.",
-            "hp": 139,
-            "dialogue": "Honor is key.",
+            "name": "Barkeep Thorne",
+            "description": "Jolly tavern owner.",
+            "hp": 122,
+            "dialogue": "Welcome, friend!",
             "npc_type": "neutral",
             "damage": 0
         }
@@ -180,8 +180,8 @@
     "quests": [
         {
             "id": "quest_kill_goblin",
-            "name": "Slay the Goblin",
-            "description": "Destroy the forest beast.",
+            "name": "Find the Scepter",
+            "description": "Retrieve ancient royal symbol.",
             "quest_type": "kill",
             "target_id": "npc_goblin",
             "deliver_to": null,
@@ -191,8 +191,8 @@
         },
         {
             "id": "quest_collect_wand",
-            "name": "Recover the Scepter",
-            "description": "Find the king's royal symbol.",
+            "name": "Uncover the Prophecy",
+            "description": "Learn of future events.",
             "quest_type": "collect",
             "target_id": "item_wand",
             "deliver_to": null,
@@ -204,10 +204,10 @@
     "player": {
         "id": "player_hero2",
         "type": "Player",
-        "name": "Eryndor Thorne",
-        "description": "Human rogue with short sword.",
-        "hp": 27,
-        "gold": 42,
+        "name": "Adventurer Eryndor",
+        "description": "Brave young warrior.",
+        "hp": 82,
+        "gold": 70,
         "inventory": [],
         "active_quests": [
             "quest_kill_goblin"

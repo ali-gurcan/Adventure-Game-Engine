@@ -37,6 +37,23 @@ class Player(Entity):
             "previous_room_id": self.previous_room_id
         }
 
+    def get_total_defense(self) -> int:
+        """Calculate total defense from armor in inventory."""
+        return sum(itm.stats.get("defense", 0) for itm in self.inventory if itm.item_type == "armor" and itm.stats)
+
+    def get_total_damage(self) -> int:
+        """Calculate total damage from weapons in inventory. Base punch is 5."""
+        weapon_dmg = [itm.stats.get("damage", 0) for itm in self.inventory if itm.item_type == "weapon" and itm.stats]
+        return max([5] + weapon_dmg)
+        
+    def get_item_by_name(self, name: str):
+        """Find an item in the player's inventory by its name (case-insensitive)."""
+        name = name.lower()
+        for itm in self.inventory:
+            if itm.name.lower() == name:
+                return itm
+        return None
+
 class NPC(Entity):
     def __init__(self, e_id: str, name: str, description: str, dialogue: str = "", npc_type: str = "neutral", damage: int = 0, hp: int = 100):
         super().__init__(e_id, name, description, hp)
