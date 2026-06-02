@@ -2,8 +2,8 @@
     "rooms": [
         {
             "id": "room_village",
-            "name": "Dark Forest",
-            "description": "Shadowy woods, creepy noises. Exits: 'north', 'east'.",
+            "name": "Frozen Cairn",
+            "description": "Snowdrifts obscure ancient runes that whisper secrets in the wind. Exits: 'north', 'east'.",
             "x": 0,
             "y": 1,
             "exits": {
@@ -17,8 +17,8 @@
         },
         {
             "id": "room_market",
-            "name": "Abandoned Mine",
-            "description": "Dusty old mining shaft. Exits: 'west', 'north'.",
+            "name": "Ravenhurst Keep",
+            "description": "A decrepit fortress with walls shrouded in night-black feathers and silence. Exits: 'west', 'north'.",
             "x": 1,
             "y": 1,
             "exits": {
@@ -26,7 +26,6 @@
                 "north": "room_tower"
             },
             "item_ids": [
-                "item_shield",
                 "item_apple"
             ],
             "npc_ids": [
@@ -35,8 +34,8 @@
         },
         {
             "id": "room_forest",
-            "name": "Tomb of Kings",
-            "description": "Grand ancient tombs. Exits: 'south', 'east', 'north'.",
+            "name": "Widow's Grotto",
+            "description": "Sea foam hisses into a dark cave where the echoes of lost lovers linger. Exits: 'south', 'east', 'north'.",
             "x": 0,
             "y": 0,
             "exits": {
@@ -44,176 +43,198 @@
                 "east": "room_tower",
                 "north": "room_cave"
             },
-            "item_ids": [
-                "item_sword"
-            ],
-            "npc_ids": [
-                "npc_goblin"
-            ]
+            "item_ids": [],
+            "npc_ids": []
         },
         {
             "id": "room_tower",
-            "name": "Haunted Mansion",
-            "description": "Spooky abandoned castle. Exits: 'west', 'south'.",
+            "name": "Sundered Sceptre",
+            "description": "A staff that shattered once, now broken pieces whisper ancient magic. Exits: 'west', 'south', 'north'.",
             "x": 1,
             "y": 0,
             "exits": {
                 "west": "room_forest",
-                "south": "room_market"
+                "south": "room_market",
+                "north": "room_dungeon"
             },
-            "item_ids": [
-                "item_wand"
-            ],
+            "item_ids": [],
             "npc_ids": [
                 "npc_wizard"
             ]
         },
         {
             "id": "room_cave",
-            "name": "Wizard Tower",
-            "description": "A tall magical spire. Exits: 'south'.",
+            "name": "Tome of Echoes",
+            "description": "Yellowed pages contain the forgotten histories of kings long dead. Exits: 'south', 'east'.",
             "x": 0,
             "y": -1,
             "exits": {
-                "south": "room_forest"
+                "south": "room_forest",
+                "east": "room_dungeon"
             },
-            "item_ids": [
-                "item_potion"
-            ],
+            "item_ids": [],
+            "npc_ids": []
+        },
+        {
+            "id": "room_dungeon",
+            "name": "Shattered Crown",
+            "description": "A diadem that once held power now rusts with the weight of a thousand betrayals. Exits: 'south', 'west'.",
+            "x": 1,
+            "y": -1,
+            "exits": {
+                "south": "room_tower",
+                "west": "room_cave"
+            },
+            "item_ids": [],
             "npc_ids": []
         }
     ],
     "items": [
         {
             "id": "item_apple",
-            "name": "Rusty Key",
-            "description": "An old metal key shape.",
+            "name": "Voidstone Dagger",
+            "description": "A blade that drinks light and whispers of forgotten names.",
             "item_type": "consumable",
             "stats": {
-                "heal": 39
+                "heal": 34
             },
             "value": 5
         },
         {
             "id": "item_sword",
-            "name": "Mithril Ingot",
-            "description": "Melted silver-white metal.",
+            "name": "Gravewarden Shield",
+            "description": "A shield etched with the names of every warrior who ever carried it.",
             "item_type": "weapon",
             "stats": {
-                "damage": 20
+                "damage": 25
             },
-            "value": 42
+            "value": 35
         },
         {
             "id": "item_wand",
-            "name": "Enchanted Quill",
-            "description": "Glowing ink-wielding quill.",
+            "name": "Flask of Moonfire",
+            "description": "Liquid starlight swirls within; one sip mends shattered flesh.",
             "item_type": "weapon",
             "stats": {
-                "damage": 44
+                "damage": 37
             },
-            "value": 75
+            "value": 58
         },
         {
             "id": "item_shield",
-            "name": "Crystal Orb",
-            "description": "Shining crystal ball.",
+            "name": "Widowmaker's Bow",
+            "description": "A bowstring made from a widow's black hair, whispering vengeance in every shot.",
             "item_type": "armor",
             "stats": {
-                "defense": 9
+                "defense": 15
             },
-            "value": 37
+            "value": 30
         },
         {
             "id": "item_potion",
-            "name": "Magic Scroll",
-            "description": "Tattered mysterious parchment.",
+            "name": "Moonstone Amulet",
+            "description": "An amulet forged from lunar rock, protecting the wearer from madness.",
             "item_type": "consumable",
             "stats": {
-                "heal": 47
+                "heal": 53
             },
-            "value": 27
+            "value": 40
         }
     ],
     "npcs": [
         {
             "id": "npc_villager",
             "type": "NPC",
-            "name": "Goblin King",
-            "description": "A fierce green monster.",
-            "hp": 177,
-            "dialogue": "Die, human!",
+            "name": "Mira the Undying",
+            "description": "A pale merchant who sells only by candlelight and never blinks.",
+            "hp": 194,
+            "dialogue": "Step closer, traveler; I carry wares the living rarely dare to buy.",
             "npc_type": "neutral",
             "damage": 0
         },
         {
             "id": "npc_merchant",
             "type": "NPC",
-            "name": "Elven Archer",
-            "description": "Elegant elf with bow.",
-            "hp": 198,
-            "dialogue": "You're a threat!",
+            "name": "Grask the Bone-Render",
+            "description": "A skeleton animated by dark sorcery, its joints wrapped in rusted chain.",
+            "hp": 197,
+            "dialogue": "Your bones will join my collection before this night is through.",
             "npc_type": "merchant",
             "damage": 0
         },
         {
             "id": "npc_goblin",
             "type": "NPC",
-            "name": "Wizardess Zara",
-            "description": "Mystical old woman.",
-            "hp": 115,
-            "dialogue": "Follow me!",
+            "name": "Elara of the Mire",
+            "description": "A swamp-witch whose eyes hold centuries of cold, patient malice.",
+            "hp": -18,
+            "dialogue": "The thing you seek lies where the roots drink from the forgotten dead.",
             "npc_type": "hostile",
-            "damage": 11
+            "damage": 30
         },
         {
             "id": "npc_wizard",
             "type": "NPC",
-            "name": "Barkeep Thorne",
-            "description": "Jolly tavern owner.",
-            "hp": 122,
-            "dialogue": "Welcome, friend!",
+            "name": "Asher Blackwood",
+            "description": "A charismatic thief with a reputation for stealing more than gold.",
+            "hp": 87,
+            "dialogue": "Meet me at Ravenhurst Keep's old stables at midnight if you wish to be rich.",
             "npc_type": "neutral",
             "damage": 0
+        },
+        {
+            "id": "npc_skeleton",
+            "type": "NPC",
+            "name": "Eira Shadowglow",
+            "description": "A lone ranger tracking an ancient evil through the cursed kingdom.",
+            "hp": -24,
+            "dialogue": "[Mystery]",
+            "npc_type": "hostile",
+            "damage": 28
         }
     ],
     "quests": [
         {
             "id": "quest_kill_goblin",
-            "name": "Find the Scepter",
-            "description": "Retrieve ancient royal symbol.",
+            "name": "Grask the Bone-Render",
+            "description": "A skeleton animated by dark sorcery, its joints wrapped in rusted chain.",
             "quest_type": "kill",
             "target_id": "npc_goblin",
             "deliver_to": null,
             "giver_npc_id": "npc_villager",
             "reward_gold": 30,
-            "status": "active"
+            "status": "completed"
         },
         {
             "id": "quest_collect_wand",
-            "name": "Uncover the Prophecy",
-            "description": "Learn of future events.",
+            "name": "Thrain Ironfist",
+            "description": "A dwarf warrior sworn to protect the people of Ravenhurst Keep from the horrors that lurk within.",
             "quest_type": "collect",
             "target_id": "item_wand",
             "deliver_to": null,
             "giver_npc_id": "npc_wizard",
             "reward_gold": 25,
-            "status": "available"
+            "status": "completed"
         }
     ],
     "player": {
-        "id": "player_hero2",
+        "id": "player_hero",
         "type": "Player",
-        "name": "Adventurer Eryndor",
-        "description": "Brave young warrior.",
-        "hp": 82,
-        "gold": 70,
-        "inventory": [],
-        "active_quests": [
+        "name": "Korvus Darkhaven",
+        "description": "A brave young warrior with a sharp mind and sharper blade.",
+        "hp": 29,
+        "gold": 269,
+        "inventory": [
+            "item_shield",
+            "item_sword",
+            "item_wand"
+        ],
+        "active_quests": [],
+        "completed_quests": [
+            "quest_collect_wand",
             "quest_kill_goblin"
         ],
-        "completed_quests": [],
-        "current_room_id": "room_forest",
-        "previous_room_id": "room_village"
+        "current_room_id": "room_dungeon",
+        "previous_room_id": "room_tower"
     }
 }

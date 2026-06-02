@@ -131,7 +131,14 @@ class MapRenderer:
         for row in canvas:
             line = "".join(row).rstrip()
             if line:
-                # Color the current room marker
-                line = line.replace("[*", "[bold green][*").replace("*]", "*][/]")
-                console.print(line)
+                from rich.text import Text
+                if "[*" in line and "*]" in line:
+                    start = line.find("[*")
+                    end = line.find("*]") + 2
+                    text = Text(line[:start])
+                    text.append(line[start:end], style="bold green")
+                    text.append(line[end:])
+                    console.print(text)
+                else:
+                    console.print(Text(line))
         console.print(f"[dim]{'=' * min(canvas_w, 60)}[/]")

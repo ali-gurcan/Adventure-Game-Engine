@@ -64,33 +64,52 @@ class TakeCommand(Command):
 class InventoryCommand(Command):
     def execute(self, args: list):
         player = self.engine_sys.state.player
+        from rich.rule import Rule
+        from rich.text import Text
+
+        # Header bar with HP + Gold
+        console.print(Rule("[bold cyan]⚔  CHARACTER STATUS  ⚔[/]", style="cyan"))
         console.print(print_hp_bar(player.hp, max_hp=200, label="HP"))
-        console.print(f"💰 Gold: {c.gold(player.gold)}\n")
-        
+        console.print(f"  💰 Gold: {c.gold(player.gold)}")
+        console.print()
+
         if not player.inventory:
-            console.print(c.dim("Your inventory is empty."))
+            console.print(Panel(
+                Text("Your pack is empty. Explore the world to find items!", style="dim italic"),
+                title="[bold yellow]🎒 Inventory[/]",
+                border_style="yellow",
+                expand=False
+            ))
         else:
-            table = Table(title="Your Inventory", show_header=True, header_style="bold magenta")
-            table.add_column("Item", style="yellow")
-            table.add_column("Type", justify="center")
+            from engine.ascii_art import get_item_icon
+            table = Table(
+                title="🎒 Inventory",
+                show_header=True,
+                header_style="bold yellow",
+                border_style="yellow",
+                show_lines=True,
+            )
+            table.add_column("", justify="center", width=4)  # icon
+            table.add_column("Item", style="bold yellow", no_wrap=True)
+            table.add_column("Type", justify="center", style="dim")
             table.add_column("Stats", justify="left")
-            table.add_column("Value", justify="right")
-            
+            table.add_column("Value", justify="right", style="bold gold1")
+
             for itm in player.inventory:
+                icon = get_item_icon(itm.name)
                 desc_parts = []
                 if itm.stats:
                     if "damage" in itm.stats:
-                        desc_parts.append(f"{c.damage('DMG:' + str(itm.stats['damage']))}")
+                        desc_parts.append(Text.from_markup(f"⚔  {c.damage('DMG: ' + str(itm.stats['damage']))}"))
                     if "heal" in itm.stats:
-                        desc_parts.append(f"{c.success('HEAL:' + str(itm.stats['heal']))}")
+                        desc_parts.append(Text.from_markup(f"❤  {c.success('HEAL: ' + str(itm.stats['heal']))}"))
                     if "defense" in itm.stats:
-                        desc_parts.append(f"{c.defense_color('DEF:' + str(itm.stats['defense']))}")
-                
-                stats_str = ", ".join(desc_parts) if desc_parts else "-"
-                val_str = str(itm.value) + "g" if itm.value > 0 else "-"
-                
-                table.add_row(itm.name, itm.item_type.capitalize(), stats_str, val_str)
-            
+                        desc_parts.append(Text.from_markup(f"🛡  {c.defense_color('DEF: ' + str(itm.stats['defense']))}"))
+
+                stats_text = Text("  ").join(desc_parts) if desc_parts else Text("-", style="dim")
+                val_str = f"{itm.value}g" if itm.value > 0 else "-"
+                table.add_row(icon, itm.name, itm.item_type.capitalize(), stats_text, val_str)
+
             console.print(table)
 
 class EscapeCommand(Command):
@@ -120,62 +139,93 @@ class InspectCommand(Command):
         itm = player.get_item_by_name(target) or room.get_item_by_name(target)
         
         if itm:
-            print(f"--- {c.item_bold(itm.name)} ---")
-            print(c.narration(itm.description))
+            from engine.ascii_art import get_item_art
+            from rich.columns import Columns
+            from rich.text import Text
+            
+            art = get_item_art(itm.name)
+            art_panel = Panel(Text(art.strip('\n'), style="bold yellow"), border_style="yellow")
+
+            content = Text()
+            content.append(f"{itm.description}\n\n", style="italic white")
+            
             if itm.stats:
                 if "damage" in itm.stats:
-                    print(f"Damage: {c.damage(str(itm.stats['damage']))}")
+                    content.append(Text.from_markup(f"Damage: {c.damage(str(itm.stats['damage']))}\n"))
                 if "heal" in itm.stats:
-                    print(f"Heals: {c.success(str(itm.stats['heal']) + ' HP')}")
+                    content.append(Text.from_markup(f"Heals: {c.success(str(itm.stats['heal']) + ' HP')}\n"))
                 if "defense" in itm.stats:
-                    print(f"Defense: {c.defense_color(str(itm.stats['defense']))}")
+                    content.append(Text.from_markup(f"Defense: {c.defense_color(str(itm.stats['defense']))}\n"))
             if itm.value > 0:
-                print(f"Value: {c.gold(itm.value)}")
+                content.append(Text.from_markup(f"Value: {c.gold(itm.value)}"))
+            
+            stats_panel = Panel(content, title=c.item_bold(itm.name), border_style="yellow", expand=False)
+            
+            console.print(Columns([art_panel, stats_panel]))
         else:
             print(c.dim("You don't see that to inspect."))
 
 class AttackCommand(Command):
+    # Dramatic attack flavour messages
+    _ATTACK_VERBS = ["slash", "strike", "hammer", "cleave", "pierce", "pummel"]
+    _KILL_MSGS = [
+        "falls to their knees and collapses!",
+        "lets out a final shriek and crumbles!",
+        "shatters into pieces!",
+        "is vanquished in a blaze of glory!",
+    ]
+
     def execute(self, args: list):
+        import random
+        from rich.rule import Rule
+
         if not args:
             print(c.warning("Attack who?"))
             return
         target = " ".join(args).lower()
         player = self.engine_sys.state.player
         room = self.engine_sys.state.rooms.get(player.current_room_id)
-        
+
         npc_target = room.get_npc_by_name(target)
-                
+
         if not npc_target:
             print(c.dim("They aren't here."))
             return
 
         dmg = player.get_total_damage()
         npc_target.hp -= dmg
-        print(f"You attack {c.enemy(npc_target.name)} for {c.damage(str(dmg))} damage! (Enemy HP: {c.damage(str(max(0, npc_target.hp)))})")
-        
+        verb = random.choice(self._ATTACK_VERBS)
+        print(
+            f"  ⚔️  You {verb} {c.enemy(npc_target.name)} for "
+            f"{c.damage(str(dmg))} damage!  [Enemy HP: {c.damage(str(max(0, npc_target.hp)))}]"
+        )
+
         if npc_target.hp <= 0:
-            print(c.success(f"You defeated {npc_target.name}!"))
-            # Drop gold reward
+            kill_msg = random.choice(self._KILL_MSGS)
+            console.print(Rule(f"[bold yellow]☠  {npc_target.name} {kill_msg}[/]", style="yellow"))
             gold_reward = getattr(npc_target, 'damage', 10) * 2
             player.gold += gold_reward
-            print(f"  💰 You found {c.gold(gold_reward)} on the body!")
+            print(f"  💰 You loot {c.gold(gold_reward)} from the fallen enemy!")
             room.npcs.remove(npc_target)
             self.engine_sys.event_bus.notify("npc_defeated", {"npc_id": npc_target.id})
-            # Check kill quests
             QuestSystem.check_quest_completion(self.engine_sys, 'npc_killed', npc_target.id)
         else:
             if npc_target.npc_type == "hostile":
                 ret_dmg = getattr(npc_target, 'damage', 10)
-                # Apply armor defense
                 defense = player.get_total_defense()
                 actual_dmg = max(1, ret_dmg - defense)
                 player.hp -= actual_dmg
                 if defense > 0:
-                    print(f"{c.enemy(npc_target.name)} retaliates for {c.damage(str(ret_dmg))} damage! "
-                          f"(Armor absorbs {c.defense_color(str(ret_dmg - actual_dmg))}. "
-                          f"You take {c.damage(str(actual_dmg))}. Your HP: {c.hp_color(max(0, player.hp))})")
+                    print(
+                        f"  💥 {c.enemy(npc_target.name)} retaliates for {c.damage(str(ret_dmg))}! "
+                        f"[Shield absorbs {c.defense_color(str(ret_dmg - actual_dmg))}] "
+                        f"→ You take {c.damage(str(actual_dmg))}  |  HP: {c.hp_color(max(0, player.hp))}"
+                    )
                 else:
-                    print(f"{c.enemy(npc_target.name)} retaliates for {c.damage(str(actual_dmg))} damage! (Your HP: {c.hp_color(max(0, player.hp))})")
+                    print(
+                        f"  💥 {c.enemy(npc_target.name)} hits you for {c.damage(str(actual_dmg))}!  "
+                        f"|  HP: {c.hp_color(max(0, player.hp))}"
+                    )
                 if player.hp <= 0:
                     print(c.error("You have been defeated... GAME OVER."))
                     self.engine_sys.can_play = False

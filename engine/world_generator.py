@@ -40,11 +40,12 @@ class WorldGenerator:
         except Exception as e:
             raise RuntimeError(f"❌ Could not load base template: {e}")
 
-        # 2. Randomly select 3-5 CONNECTED rooms from the template
-        room_count = random.randint(3, 5)
+        # 2. Randomly select 4-7 CONNECTED rooms from the template
+        room_count = random.randint(4, 7)
         world_data = self._trim_world(world_data, room_count)
         actual_room_count = len(world_data.get('rooms', []))
         print(f"   🏰 Room count: {actual_room_count}")
+
 
         for attempt in range(self.MAX_RETRIES + 1):
             try:
@@ -145,56 +146,84 @@ class WorldGenerator:
 
     def _build_request(self, world_data: dict) -> str:
         variety_seed = random.randint(1, 100000)
-        
+        themes = [
+            "dark medieval fantasy", "high fantasy with ancient ruins", "gothic horror",
+            "sword and sorcery", "cursed kingdom", "lost civilization explorer"
+        ]
+        theme = random.choice(themes)
+        self.theme = theme
+
         room_count = len(world_data.get('rooms', []))
         item_count = len(world_data.get('items', []))
-        npc_count = len(world_data.get('npcs', []))
-        
-        # Build dynamic format section
-        room_lines = "\n".join([f"[Room {i+1} Name]|[Very short description]" for i in range(room_count)])
-        item_lines = "\n".join([f"[Item Name]|[Very short description]" for _ in range(item_count)])
-        
-        # Determine NPC format based on types
+        npc_count  = len(world_data.get('npcs', []))
+
+        # Build dynamic format hints
+        room_lines = "\n".join(
+            [f"[Evocative Room {i+1} Name]|[1 atmospheric sentence about this place]" for i in range(room_count)]
+        )
+        item_lines = "\n".join(
+            [f"[Unique Item Name]|[1 sentence description with lore flavour]" for _ in range(item_count)]
+        )
+
         npc_format_lines = []
         for npc in world_data.get('npcs', []):
             npc_type = npc.get('npc_type', 'neutral')
             if npc_type == 'merchant':
-                npc_format_lines.append("[Merchant Name]|[Very short desc]|[Short merchant greeting]")
+                npc_format_lines.append(
+                    "[Colourful Merchant Name]|[1 sentence trader description]|[Enticing greeting that mentions their wares]"
+                )
+            elif npc_type == 'hostile':
+                npc_format_lines.append(
+                    "[Menacing Enemy Name]|[1 sentence monster description]|[Threatening battle cry or growl]"
+                )
             else:
-                npc_format_lines.append("[NPC Name]|[Very short desc]|[Very short dialogue]")
+                npc_format_lines.append(
+                    "[Interesting NPC Name]|[1 sentence character description]|[Dialogue hinting at a quest, secret, or lore]"
+                )
         npc_lines = "\n".join(npc_format_lines)
-        
-        # Quest format
+
         quest_count = len(world_data.get('quests', []))
-        quest_lines = "\n".join([f"[Quest Name]|[Very short quest description]" for _ in range(quest_count)])
+        quest_lines = "\n".join(
+            [f"[Compelling Quest Name]|[1 sentence quest objective, clear and specific]" for _ in range(quest_count)]
+        )
+
         total_lines = room_count + item_count + npc_count + 1 + quest_count  # +1 for player
-        
-        system_prompt = f"""You are a game generator. Reply with EXACTLY {total_lines} lines of pipe-separated (|) text. NO markdown, NO intro.
-Order: {room_count} Rooms, {item_count} Items, {npc_count} NPCs, 1 Player, {quest_count} Quests.
-Keep descriptions and dialogues EXTREMELY short (max 3-5 words) to save time!
+
+        system_prompt = f"""You are a world-builder for a {theme} text adventure game.
+Reply with EXACTLY {total_lines} pipe-separated (|) lines. NO markdown, NO numbered lists, NO extra text.
+Order: {room_count} Rooms, {item_count} Items, {npc_count} NPCs, 1 Player name line, {quest_count} Quests.
+
+Naming rules:
+- Room names: 2-3 evocative words (e.g. "Ashen Hollow", "Thornwall Keep", "Pale Reaches").
+- Item names: specific and interesting (e.g. "Voidstone Dagger", "Flask of Moonfire", "Gravewarden Shield").
+- NPC names: fit their role. Merchants sound mercantile. Enemies sound menacing. Neutral NPCs feel real.
+- Descriptions: exactly 1 sentence, atmospheric, max 15 words.
+- Dialogues: exactly 1 sentence, in-character, 8-14 words, hint at lore or quest.
+- Quest names: 3-5 words. Quest descriptions: 1 sentence with a clear objective.
+- Player line: a single heroic first name only (e.g. "Aldric", "Sera", "Vorn").
 
 Format:
 {room_lines}
 {item_lines}
 {npc_lines}
-[Player Name]|[Very short desc]
+[Hero's first name only]
 {quest_lines}
 
-Example:
-Village Square|A peaceful cobblestone square.
-Dark Forest|Shadowy woods, creepy noises.
-Castle Tower|A tall abandoned tower.
-Iron Sword|A rusty but sharp blade.
-Health Potion|Glowing red magical liquid.
-Gold Ring|A shiny plain band.
-Villager|A scared looking man.|Please help us!
-Goblin|A green ugly monster.|Argh! Die!
-Old Wizard|A wise old man.|Take this wand.
-Sir Boramir|A brave and noble knight.
-Goblin Hunt|Slay the forest beast.
-The Lost Crown|Return the king's crown."""
+Example output:
+Ashen Hollow|A ruined village where ash falls like snow from a perpetually grey sky.
+Thornwall Keep|Crumbling battlements covered in black ivy overlook a fog-filled valley.
+Blood Mire|Thick red mud gurgles and shifts as if something beneath still breathes.
+Voidstone Dagger|A blade that drinks light and whispers of forgotten names.
+Flask of Moonfire|Liquid starlight swirls within; one sip mends shattered flesh.
+Gravewarden Shield|A shield etched with the names of every warrior who ever carried it.
+Mira the Undying|A pale merchant who sells only by candlelight and never blinks.|Step closer, traveler; I carry wares the living rarely dare to buy.
+Grask the Bone-Render|A skeleton animated by dark sorcery, its joints wrapped in rusted chain.|Your bones will join my collection before this night is through.
+Elara of the Mire|A swamp-witch whose eyes hold centuries of cold, patient malice.|The thing you seek lies where the roots drink from the forgotten dead.
+Kael
+Bone-Render's End|Defeat Grask the Bone-Render haunting Ashen Hollow to lift the curse.
+The Sunken Compass|Retrieve the navigator's lost compass from the depths of Blood Mire."""
 
-        user_prompt = f"Generate {self.theme} fantasy game objects. Seed: {variety_seed}"
+        user_prompt = f"Generate a {theme} text adventure world. Seed: {variety_seed}"
 
         return json.dumps({
             "model": self.model,
@@ -202,8 +231,8 @@ The Lost Crown|Return the king's crown."""
             "system": system_prompt,
             "stream": True,
             "options": {
-                "temperature": 0.8,
-                "num_predict": 250
+                "temperature": 0.85,
+                "num_predict": 500,
             }
         })
 
@@ -247,13 +276,13 @@ The Lost Crown|Return the king's crown."""
         total_expected = room_count + item_count + npc_count + 1
 
         if len(lines) < total_expected:
-            raise ValueError(f"LLM produced incomplete data (expected {total_expected} lines, got {len(lines)}).")
+            print(f"\n   ⚠️ Warning: LLM produced incomplete data (expected {total_expected} lines, got {len(lines)}). Using defaults for the rest.")
 
         def safe_split(line, expected_parts):
             parts = line.split('|')
             if len(parts) < expected_parts:
-                raise ValueError(f"Incomplete line format: '{line}' (expected {expected_parts} parts, got {len(parts)}).")
-            return [p.strip() for p in parts]
+                parts.extend(["[Mystery]"] * (expected_parts - len(parts)))
+            return [p.strip() for p in parts[:expected_parts]]
 
         # Rooms
         rooms = base_data.get('rooms', [])
@@ -295,15 +324,19 @@ The Lost Crown|Return the king's crown."""
                 if npcs[i].get('npc_type') == 'hostile':
                     npcs[i]['damage'] = random.randint(10, 30)
 
-        # Player (last line)
+        # Player line — LLM now emits only a name (no desc pipe)
+        # Accept only single short proper names; fall back to template value
         player = base_data.get('player', {})
         player_idx = room_count + item_count + npc_count
         if player_idx < len(lines):
-            parts = safe_split(lines[player_idx], 2)
-            player['name'] = parts[0]
-            player['description'] = parts[1]
-            player['hp'] = random.randint(100, 200)
-            player['gold'] = random.randint(30, 80)
+            raw_player_line = lines[player_idx]
+            # Could be "Name" or "Name|desc" — take only first part
+            candidate = raw_player_line.split('|')[0].strip()
+            if candidate and len(candidate.split()) <= 2 and len(candidate) <= 24:
+                player['name'] = candidate
+            # else keep template name (Hurin)
+        player['hp']   = random.randint(130, 200)
+        player['gold'] = random.randint(40, 100)
 
         # Quests (after player)
         quests = base_data.get('quests', [])
@@ -326,20 +359,32 @@ The Lost Crown|Return the king's crown."""
 
         personality = ""
         if npc_type == "hostile":
-            personality = "You are aggressive, threatening, and menacing. You speak in short, angry sentences. You might insult the player or threaten violence."
+            personality = (
+                "You are a dangerous and aggressive monster or villain. "
+                "You speak in short, threatening sentences full of menace. "
+                "You might taunt, insult or threaten violence. "
+                "Occasionally you can reveal a twisted backstory or motivation if pressed."
+            )
         elif npc_type == "merchant":
-            personality = "You are a shrewd but friendly trader. You love talking about your wares and making deals. You speak with merchant charm."
+            personality = (
+                "You are a shrewd but charming trader. You love talking about your rare wares. "
+                "Drop hints about interesting items or services. Be persuasive and slightly mysterious."
+            )
         else:
-            personality = "You are a friendly, helpful character. You may share rumors, advice, or lore about the world."
+            personality = (
+                "You are a knowledgeable and interesting character in a fantasy world. "
+                "Share rumors, lore, advice, or warnings related to your surroundings. "
+                "You may have secrets you reveal gradually if the player asks the right questions."
+            )
 
-        system_prompt = f"""You are '{npc_name}', a {npc_type} NPC in a medieval fantasy adventure game.
+        system_prompt = f"""You are '{npc_name}', a {npc_type} NPC in a fantasy adventure game.
 Description: {npc_description}
 {personality}
-Rules:
-- Stay in character at ALL times.
-- Keep responses SHORT (1-2 sentences max).
-- NEVER break character or mention you are an AI.
-- React naturally to what the player says."""
+Strict rules:
+- Stay in character at ALL times. NEVER break character or say you are an AI.
+- Respond in 1-2 sentences max (20 words max per reply).
+- React naturally and emotionally to what the player says.
+- If the player mentions something in your environment, acknowledge it."""
 
         request_body = json.dumps({
             "model": model,
@@ -347,8 +392,8 @@ Rules:
             "system": system_prompt,
             "stream": True,
             "options": {
-                "temperature": 0.7,
-                "num_predict": 60
+                "temperature": 0.75,
+                "num_predict": 80,
             }
         })
 
