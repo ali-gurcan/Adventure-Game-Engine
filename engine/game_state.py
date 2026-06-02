@@ -43,7 +43,7 @@ class GameState:
             
             self.rooms = {}
             for r_data in data.get('rooms', []):
-                room = Room(r_data['id'], r_data['name'], r_data['description'])
+                room = Room(r_data['id'], r_data['name'], r_data['description'], r_data.get('x', 0), r_data.get('y', 0))
                 room.exits = r_data.get('exits', {})
                 for item_id in r_data.get('item_ids', []):
                     if item_id in self.items:

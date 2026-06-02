@@ -2,8 +2,10 @@
     "rooms": [
         {
             "id": "room_village",
-            "name": "Dusty Cellar",
-            "description": "A damp musty underground room. Exits: 'north'.",
+            "name": "Dungeon Entrance",
+            "description": "A dark mysterious cave. Exits: 'north'.",
+            "x": 0,
+            "y": 1,
             "exits": {
                 "north": "room_forest"
             },
@@ -16,8 +18,10 @@
         },
         {
             "id": "room_forest",
-            "name": "Muddy Swamp",
-            "description": "Murky waters with slimy plants. Exits: 'south', 'east'.",
+            "name": "Abandoned Hut",
+            "description": "Rubble and debris inside. Exits: 'south', 'east'.",
+            "x": 0,
+            "y": 0,
             "exits": {
                 "south": "room_village",
                 "east": "room_tower"
@@ -32,8 +36,10 @@
         },
         {
             "id": "room_tower",
-            "name": "Abandoned Mine",
-            "description": "Dark empty tunnels of stone. Exits: 'west'.",
+            "name": "Garden Maze",
+            "description": "Overgrown greenery everywhere. Exits: 'west'.",
+            "x": 1,
+            "y": 0,
             "exits": {
                 "west": "room_forest"
             },
@@ -46,29 +52,29 @@
     "items": [
         {
             "id": "item_apple",
-            "name": "Leather Tunic",
-            "description": "Worn but sturdy armor piece.",
+            "name": "Mithril Chalice",
+            "description": "Moonlight reflected beauty.",
             "item_type": "consumable",
             "stats": {
-                "heal": 59
+                "heal": 25
             }
         },
         {
             "id": "item_wand",
-            "name": "Magic Quill",
-            "description": "Glows softly in darkness.",
+            "name": "Ancient Tome",
+            "description": "Rusty old leather binding.",
             "item_type": "weapon",
             "stats": {
-                "damage": 42
+                "damage": 38
             }
         },
         {
             "id": "item_sword",
-            "name": "Golden Amulet",
-            "description": "Shines brightly on the chest.",
+            "name": "Enchanted Quill",
+            "description": "Shining with soft light.",
             "item_type": "weapon",
             "stats": {
-                "damage": 22
+                "damage": 49
             }
         }
     ],
@@ -76,30 +82,30 @@
         {
             "id": "npc_villager",
             "type": "NPC",
-            "name": "Vagabond",
-            "description": "A homeless old man.",
-            "hp": 162,
-            "dialogue": "Food is scarce.",
+            "name": "Wise Sage",
+            "description": "A gentle wise man.",
+            "hp": 57,
+            "dialogue": "Find inner peace.",
             "npc_type": "neutral",
             "damage": 0
         },
         {
             "id": "npc_goblin",
             "type": "NPC",
-            "name": "Dragon",
-            "description": "A fierce fire-breathing beast.",
-            "hp": 133,
-            "dialogue": "You will burn!",
+            "name": "Fierce Dragon",
+            "description": "A roaring fierce beast.",
+            "hp": 75,
+            "dialogue": "Beware the fire!",
             "npc_type": "hostile",
-            "damage": 11
+            "damage": 18
         },
         {
             "id": "npc_wizard",
             "type": "NPC",
-            "name": "King's Guard",
-            "description": "An armored noble knight.",
-            "hp": 124,
-            "dialogue": "I'll defend the crown.",
+            "name": "Mischievous Pixie",
+            "description": "A playful tiny spirit.",
+            "hp": 149,
+            "dialogue": "Play tricks on you.",
             "npc_type": "neutral",
             "damage": 0
         }
@@ -107,9 +113,9 @@
     "player": {
         "id": "player_hero2",
         "type": "Player",
-        "name": "Elara",
-        "description": "A skilled young elf archer.",
-        "hp": 154,
+        "name": "Sir Edward",
+        "description": "A chivalrous noble knight.",
+        "hp": 156,
         "inventory": [],
         "current_room_id": "room_village",
         "previous_room_id": null

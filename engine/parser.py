@@ -1,4 +1,4 @@
-from engine.commands import GoCommand, LookCommand, TakeCommand, InventoryCommand, EscapeCommand, InspectCommand, AttackCommand, UseCommand
+from engine.commands import GoCommand, LookCommand, TakeCommand, InventoryCommand, EscapeCommand, InspectCommand, AttackCommand, UseCommand, MapCommand
 
 class Parser:
     def __init__(self, engine_sys):
@@ -19,7 +19,8 @@ class Parser:
             "hit": AttackCommand(engine_sys),
             "use": UseCommand(engine_sys),
             "eat": UseCommand(engine_sys),
-            "drink": UseCommand(engine_sys)
+            "drink": UseCommand(engine_sys),
+            "map": MapCommand(engine_sys),
         }
 
     def parse_and_execute(self, input_str: str):

@@ -2,104 +2,169 @@
     "rooms": [
         {
             "id": "room_village",
-            "name": "Dragon's Tooth",
-            "description": "Mighty sharp tooth fragment. Exits: 'north'.",
+            "name": "Cursed Temple",
+            "description": "Abandoned ancient ruin. Exits: 'north'.",
+            "x": 0,
+            "y": 1,
             "exits": {
                 "north": "room_forest"
             },
-            "item_ids": [
-                "item_apple"
-            ],
+            "item_ids": [],
             "npc_ids": [
                 "npc_villager"
             ]
         },
         {
             "id": "room_forest",
-            "name": "Ancient Tome",
-            "description": "Leather bound dusty book. Exits: 'south', 'east'.",
+            "name": "Forbidden Forest",
+            "description": "Twisted woods with thorns. Exits: 'south', 'east'.",
+            "x": 0,
+            "y": 0,
             "exits": {
                 "south": "room_village",
                 "east": "room_tower"
             },
-            "item_ids": [
-                "item_wand",
-                "item_sword"
-            ],
-            "npc_ids": [
-                "npc_goblin"
-            ]
+            "item_ids": [],
+            "npc_ids": []
         },
         {
             "id": "room_tower",
-            "name": "Cursed Amulet",
-            "description": "Glowing with dark magic. Exits: 'west'.",
+            "name": "Witch's Tower",
+            "description": "Spooky, crooked spire. Exits: 'west', 'north'.",
+            "x": 1,
+            "y": 0,
             "exits": {
-                "west": "room_forest"
+                "west": "room_forest",
+                "north": "room_dungeon"
             },
             "item_ids": [],
             "npc_ids": [
                 "npc_wizard"
+            ]
+        },
+        {
+            "id": "room_dungeon",
+            "name": "Magic Crystal",
+            "description": "Glowing purple rock. Exits: 'south', 'east'.",
+            "x": 1,
+            "y": -1,
+            "exits": {
+                "south": "room_tower",
+                "east": "room_throne"
+            },
+            "item_ids": [
+                "item_shield"
+            ],
+            "npc_ids": []
+        },
+        {
+            "id": "room_throne",
+            "name": "Haunted Hallway",
+            "description": "Creepy, dark passage. Exits: 'west'.",
+            "x": 2,
+            "y": -1,
+            "exits": {
+                "west": "room_dungeon"
+            },
+            "item_ids": [],
+            "npc_ids": [
+                "npc_king"
             ]
         }
     ],
     "items": [
         {
             "id": "item_apple",
-            "name": "Mystic Staff",
-            "description": "Glows with soft blue light.",
+            "name": "Healing Elixir",
+            "description": "Colorful, glowing liquid.",
             "item_type": "consumable",
             "stats": {
-                "heal": 47
+                "heal": 39
             }
         },
         {
             "id": "item_wand",
-            "name": "Healing Tear",
-            "description": "Small vial of liquid crystal.",
+            "name": "Mystic Cloak",
+            "description": "Shimmering, ethereal fabric.",
             "item_type": "weapon",
             "stats": {
-                "damage": 44
+                "damage": 33
             }
         },
         {
             "id": "item_sword",
-            "name": "Tattered Cloak",
-            "description": "Ragged and worn cloak.",
+            "name": "Tainted Axe",
+            "description": "Bloodstained, rusty blade.",
             "item_type": "weapon",
             "stats": {
-                "damage": 16
+                "damage": 49
             }
+        },
+        {
+            "id": "item_shield",
+            "name": "Shield",
+            "description": "A battered iron shield.",
+            "item_type": "armor",
+            "stats": {
+                "defense": 10
+            }
+        },
+        {
+            "id": "item_crown",
+            "name": "Crown",
+            "description": "A golden crown encrusted with gems.",
+            "item_type": "misc",
+            "stats": {}
         }
     ],
     "npcs": [
         {
             "id": "npc_villager",
             "type": "NPC",
-            "name": "Fierce Orc",
-            "description": "Scaly green warrior.",
-            "hp": 60,
-            "dialogue": "You'll pay!",
+            "name": "Grimbeard",
+            "description": "A grumpy old dwarf.",
+            "hp": 80,
+            "dialogue": "Get out of here!",
             "npc_type": "neutral",
             "damage": 0
         },
         {
             "id": "npc_goblin",
             "type": "NPC",
-            "name": "Mysterious Stranger",
-            "description": "Muted hooded figure.",
-            "hp": 162,
-            "dialogue": "Not now, friend.",
+            "name": "Kagga",
+            "description": "A snarling wolf creature.",
+            "hp": -38,
+            "dialogue": "Rrrraaah!",
             "npc_type": "hostile",
-            "damage": 17
+            "damage": 12
         },
         {
             "id": "npc_wizard",
             "type": "NPC",
-            "name": "Wise Druid",
-            "description": "Nature-attuned woman.",
+            "name": "Lila",
+            "description": "A mysterious sorceress.",
+            "hp": 131,
+            "dialogue": "You seek power?",
+            "npc_type": "neutral",
+            "damage": 0
+        },
+        {
+            "id": "npc_skeleton",
+            "type": "NPC",
+            "name": "Skeleton Warrior",
+            "description": "A rattling skeleton gripping a rusty sword.",
+            "hp": -38,
+            "dialogue": "...",
+            "npc_type": "hostile",
+            "damage": 20
+        },
+        {
+            "id": "npc_king",
+            "type": "NPC",
+            "name": "Ghost King",
+            "description": "A translucent figure sitting on the throne.",
             "hp": 150,
-            "dialogue": "Follow me slowly.",
+            "dialogue": "Return my crown and I shall grant you passage.",
             "npc_type": "neutral",
             "damage": 0
         }
@@ -107,11 +172,15 @@
     "player": {
         "id": "player_hero2",
         "type": "Player",
-        "name": "Eryndor Thorne",
-        "description": "A young brave adventurer.",
-        "hp": 160,
-        "inventory": [],
-        "current_room_id": "room_village",
-        "previous_room_id": null
+        "name": "Eryndor",
+        "description": "A brave young warrior.",
+        "hp": 73,
+        "inventory": [
+            "item_sword",
+            "item_wand",
+            "item_crown"
+        ],
+        "current_room_id": "room_throne",
+        "previous_room_id": "room_dungeon"
     }
 }

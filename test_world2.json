@@ -4,6 +4,8 @@
             "id": "room_village",
             "name": "Village Square",
             "description": "A peaceful village square with a bubbling fountain. A dark and ominous forest lies to the 'north'.",
+            "x": 0,
+            "y": 1,
             "exits": {
                 "north": "room_forest"
             },
@@ -18,6 +20,8 @@
             "id": "room_forest",
             "name": "Dark Forest",
             "description": "The trees are so thick here that barely any sunlight reaches the ground. A narrow path leads 'east' towards a tall spire, and the village is back to the 'south'.",
+            "x": 0,
+            "y": 0,
             "exits": {
                 "south": "room_village",
                 "east": "room_tower"
@@ -34,12 +38,48 @@
             "id": "room_tower",
             "name": "Wizard's Tower",
             "description": "The air crackles with magical energy inside this circular stone tower. The way out is to the 'west'.",
+            "x": 1,
+            "y": 0,
             "exits": {
-                "west": "room_forest"
+                "west": "room_forest",
+                "north": "room_dungeon"
             },
             "item_ids": [],
             "npc_ids": [
                 "npc_wizard"
+            ]
+        },
+        {
+            "id": "room_dungeon",
+            "name": "Ancient Dungeon",
+            "description": "A damp underground passage lit by flickering torches. Strange markings cover the walls.",
+            "x": 1,
+            "y": -1,
+            "exits": {
+                "south": "room_tower",
+                "east": "room_throne"
+            },
+            "item_ids": [
+                "item_shield"
+            ],
+            "npc_ids": [
+                "npc_skeleton"
+            ]
+        },
+        {
+            "id": "room_throne",
+            "name": "Throne Room",
+            "description": "A grand hall with a towering stone throne at the far end. Cold wind blows through shattered windows.",
+            "x": 2,
+            "y": -1,
+            "exits": {
+                "west": "room_dungeon"
+            },
+            "item_ids": [
+                "item_crown"
+            ],
+            "npc_ids": [
+                "npc_king"
             ]
         }
     ],
@@ -70,6 +110,22 @@
             "stats": {
                 "damage": 15
             }
+        },
+        {
+            "id": "item_shield",
+            "name": "Shield",
+            "description": "A battered iron shield.",
+            "item_type": "armor",
+            "stats": {
+                "defense": 10
+            }
+        },
+        {
+            "id": "item_crown",
+            "name": "Crown",
+            "description": "A golden crown encrusted with gems.",
+            "item_type": "misc",
+            "stats": {}
         }
     ],
     "npcs": [
@@ -100,6 +156,26 @@
             "description": "An old man wearing a pointed hat.",
             "hp": 200,
             "dialogue": "Ah, a visitor. Have you brought me my lost wand?",
+            "npc_type": "neutral",
+            "damage": 0
+        },
+        {
+            "id": "npc_skeleton",
+            "type": "NPC",
+            "name": "Skeleton Warrior",
+            "description": "A rattling skeleton gripping a rusty sword.",
+            "hp": 60,
+            "dialogue": "...",
+            "npc_type": "hostile",
+            "damage": 20
+        },
+        {
+            "id": "npc_king",
+            "type": "NPC",
+            "name": "Ghost King",
+            "description": "A translucent figure sitting on the throne.",
+            "hp": 150,
+            "dialogue": "Return my crown and I shall grant you passage.",
             "npc_type": "neutral",
             "damage": 0
         }
