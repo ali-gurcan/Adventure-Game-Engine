@@ -2,8 +2,8 @@
     "rooms": [
         {
             "id": "room_village",
-            "name": "Frozen Cairn",
-            "description": "Snowdrifts obscure ancient runes that whisper secrets in the wind. Exits: 'north', 'east'.",
+            "name": "Echoing Caverns",
+            "description": "A vast underground chamber filled with the whispers of ancient songs. Exits: 'north', 'east'.",
             "x": 0,
             "y": 1,
             "exits": {
@@ -17,8 +17,8 @@
         },
         {
             "id": "room_market",
-            "name": "Ravenhurst Keep",
-            "description": "A decrepit fortress with walls shrouded in night-black feathers and silence. Exits: 'west', 'north'.",
+            "name": "Raven's Spire",
+            "description": "A twisted, black tree rises to support a delicate stone spire. Exits: 'west', 'north'.",
             "x": 1,
             "y": 1,
             "exits": {
@@ -34,8 +34,8 @@
         },
         {
             "id": "room_forest",
-            "name": "Widow's Grotto",
-            "description": "Sea foam hisses into a dark cave where the echoes of lost lovers linger. Exits: 'south', 'east', 'north'.",
+            "name": "Shattered Peaks",
+            "description": "Magma flows from rent earth like lifeblood from mortal wounds. Exits: 'south', 'east', 'north'.",
             "x": 0,
             "y": 0,
             "exits": {
@@ -48,8 +48,8 @@
         },
         {
             "id": "room_tower",
-            "name": "Sundered Sceptre",
-            "description": "A staff that shattered once, now broken pieces whisper ancient magic. Exits: 'west', 'south', 'north'.",
+            "name": "Moonlit Grotto",
+            "description": "An underwater cavern lit by an ethereal glow emanates from hidden crystals. Exits: 'west', 'south', 'north'.",
             "x": 1,
             "y": 0,
             "exits": {
@@ -64,8 +64,8 @@
         },
         {
             "id": "room_cave",
-            "name": "Tome of Echoes",
-            "description": "Yellowed pages contain the forgotten histories of kings long dead. Exits: 'south', 'east'.",
+            "name": "Ghostfire Tower",
+            "description": "A burning tower stands amidst a sea of dark, motionless trees. Exits: 'south', 'east'.",
             "x": 0,
             "y": -1,
             "exits": {
@@ -77,26 +77,41 @@
         },
         {
             "id": "room_dungeon",
-            "name": "Shattered Crown",
-            "description": "A diadem that once held power now rusts with the weight of a thousand betrayals. Exits: 'south', 'west'.",
+            "name": "Blackstone Bridge",
+            "description": "A rickety bridge suspended over a churning river fuels the whispers of doom. Exits: 'south', 'west', 'east'.",
             "x": 1,
             "y": -1,
             "exits": {
                 "south": "room_tower",
-                "west": "room_cave"
+                "west": "room_cave",
+                "east": "room_throne"
             },
             "item_ids": [],
             "npc_ids": []
+        },
+        {
+            "id": "room_throne",
+            "name": "Voidstone Dagger",
+            "description": "A blade that drinks light and whispers of forgotten names. Exits: 'west'.",
+            "x": 2,
+            "y": -1,
+            "exits": {
+                "west": "room_dungeon"
+            },
+            "item_ids": [],
+            "npc_ids": [
+                "npc_king"
+            ]
         }
     ],
     "items": [
         {
             "id": "item_apple",
-            "name": "Voidstone Dagger",
-            "description": "A blade that drinks light and whispers of forgotten names.",
+            "name": "Flask of Moonfire",
+            "description": "Liquid starlight swirls within; one sip mends shattered flesh.",
             "item_type": "consumable",
             "stats": {
-                "heal": 34
+                "heal": 55
             },
             "value": 5
         },
@@ -106,98 +121,116 @@
             "description": "A shield etched with the names of every warrior who ever carried it.",
             "item_type": "weapon",
             "stats": {
-                "damage": 25
+                "damage": 40
+            },
+            "value": 24
+        },
+        {
+            "id": "item_wand",
+            "name": "Mira the Undying",
+            "description": "A pale merchant who sells only by candlelight and never blinks.",
+            "item_type": "weapon",
+            "stats": {
+                "damage": 41
+            },
+            "value": 63
+        },
+        {
+            "id": "item_shield",
+            "name": "Grask the Bone-Render",
+            "description": "A skeleton animated by dark sorcery, its joints wrapped in rusted chain.",
+            "item_type": "armor",
+            "stats": {
+                "defense": 13
             },
             "value": 35
         },
         {
-            "id": "item_wand",
-            "name": "Flask of Moonfire",
-            "description": "Liquid starlight swirls within; one sip mends shattered flesh.",
-            "item_type": "weapon",
-            "stats": {
-                "damage": 37
-            },
-            "value": 58
-        },
-        {
-            "id": "item_shield",
-            "name": "Widowmaker's Bow",
-            "description": "A bowstring made from a widow's black hair, whispering vengeance in every shot.",
-            "item_type": "armor",
-            "stats": {
-                "defense": 15
-            },
-            "value": 30
-        },
-        {
             "id": "item_potion",
-            "name": "Moonstone Amulet",
-            "description": "An amulet forged from lunar rock, protecting the wearer from madness.",
+            "name": "Elara of the Mire",
+            "description": "A swamp-witch whose eyes hold centuries of cold, patient malice.",
             "item_type": "consumable",
             "stats": {
-                "heal": 53
+                "heal": 58
             },
-            "value": 40
+            "value": 18
+        },
+        {
+            "id": "item_crown",
+            "name": "Bane of the Bone-Render",
+            "description": "Steal the Voidstone Dagger from Grask's lair in Raven's Spire.",
+            "item_type": "misc",
+            "stats": {},
+            "value": 98
         }
     ],
     "npcs": [
         {
             "id": "npc_villager",
             "type": "NPC",
-            "name": "Mira the Undying",
-            "description": "A pale merchant who sells only by candlelight and never blinks.",
-            "hp": 194,
-            "dialogue": "Step closer, traveler; I carry wares the living rarely dare to buy.",
+            "name": "Curse of the Mire",
+            "description": "Deliver the Flask of Moonfire to Elara in Ghostfire Tower.",
+            "hp": 166,
+            "dialogue": "[Mystery]",
             "npc_type": "neutral",
             "damage": 0
         },
         {
             "id": "npc_merchant",
             "type": "NPC",
-            "name": "Grask the Bone-Render",
-            "description": "A skeleton animated by dark sorcery, its joints wrapped in rusted chain.",
-            "hp": 197,
-            "dialogue": "Your bones will join my collection before this night is through.",
+            "name": "Moonlit Heist",
+            "description": "Retrieve the Gravewarden Shield from Shattered Peaks.",
+            "hp": 195,
+            "dialogue": "[Mystery]",
             "npc_type": "merchant",
             "damage": 0
         },
         {
             "id": "npc_goblin",
             "type": "NPC",
-            "name": "Elara of the Mire",
-            "description": "A swamp-witch whose eyes hold centuries of cold, patient malice.",
-            "hp": -18,
-            "dialogue": "The thing you seek lies where the roots drink from the forgotten dead.",
+            "name": "Vicious Goblin",
+            "description": "A green-skinned monster holding a jagged dagger, drooling with malicious glee.",
+            "hp": -1,
+            "dialogue": "Graargh! Tasty adventurer! Goblin SMASH!",
             "npc_type": "hostile",
-            "damage": 30
+            "damage": 15
         },
         {
             "id": "npc_wizard",
             "type": "NPC",
-            "name": "Asher Blackwood",
-            "description": "A charismatic thief with a reputation for stealing more than gold.",
-            "hp": 87,
-            "dialogue": "Meet me at Ravenhurst Keep's old stables at midnight if you wish to be rich.",
+            "name": "Old Wizard",
+            "description": "An ancient sorcerer wearing a moth-eaten pointed hat, surrounded by floating books.",
+            "hp": 200,
+            "dialogue": "Ah, a visitor! My enchanted wand was stolen by that wretched goblin. Bring it back and I shall grant you passage to the dungeon.",
             "npc_type": "neutral",
             "damage": 0
         },
         {
             "id": "npc_skeleton",
             "type": "NPC",
-            "name": "Eira Shadowglow",
-            "description": "A lone ranger tracking an ancient evil through the cursed kingdom.",
-            "hp": -24,
-            "dialogue": "[Mystery]",
+            "name": "Skeleton Warrior",
+            "description": "A rattling skeleton gripping a rusty sword, its empty eye sockets glowing faintly red.",
+            "hp": -22,
+            "dialogue": "...*rattles menacingly*...",
             "npc_type": "hostile",
-            "damage": 28
+            "damage": 20
+        },
+        {
+            "id": "npc_king",
+            "type": "NPC",
+            "name": "Ghost King",
+            "description": "A translucent figure sitting on the throne, radiating an aura of cold sorrow.",
+            "hp": 150,
+            "dialogue": "Return my ancient crown to me, mortal... and I shall release the curse upon this land.",
+            "npc_type": "neutral",
+            "damage": 0
         }
     ],
     "quests": [
         {
             "id": "quest_kill_goblin",
-            "name": "Grask the Bone-Render",
-            "description": "A skeleton animated by dark sorcery, its joints wrapped in rusted chain.",
+            "name": "Goblin Hunt",
+            "description": "The villager begs you to defeat the vicious goblin terrorizing the Dark Forest. A reward awaits!",
             "quest_type": "kill",
             "target_id": "npc_goblin",
             "deliver_to": null,
@@ -206,9 +239,20 @@
             "status": "completed"
         },
         {
+            "id": "quest_deliver_crown",
+            "name": "The Lost Crown",
+            "description": "The Ghost King haunts the throne room, longing for his Ancient Crown. Find it in the throne room and bring it to him.",
+            "quest_type": "deliver",
+            "target_id": "item_crown",
+            "deliver_to": "npc_king",
+            "giver_npc_id": "npc_wizard",
+            "reward_gold": 50,
+            "status": "active"
+        },
+        {
             "id": "quest_collect_wand",
-            "name": "Thrain Ironfist",
-            "description": "A dwarf warrior sworn to protect the people of Ravenhurst Keep from the horrors that lurk within.",
+            "name": "The Wizard's Lost Wand",
+            "description": "The Old Wizard's enchanted wand ended up in the Dark Forest. Retrieve it and return it to the Wizard.",
             "quest_type": "collect",
             "target_id": "item_wand",
             "deliver_to": null,
@@ -220,21 +264,24 @@
     "player": {
         "id": "player_hero",
         "type": "Player",
-        "name": "Korvus Darkhaven",
+        "name": "Hurin",
         "description": "A brave young warrior with a sharp mind and sharper blade.",
-        "hp": 29,
-        "gold": 269,
+        "hp": 174,
+        "gold": 195,
         "inventory": [
             "item_shield",
             "item_sword",
-            "item_wand"
+            "item_wand",
+            "item_crown"
         ],
-        "active_quests": [],
+        "active_quests": [
+            "quest_deliver_crown"
+        ],
         "completed_quests": [
             "quest_collect_wand",
             "quest_kill_goblin"
         ],
-        "current_room_id": "room_dungeon",
-        "previous_room_id": "room_tower"
+        "current_room_id": "room_throne",
+        "previous_room_id": "room_dungeon"
     }
 }

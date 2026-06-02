@@ -23,7 +23,7 @@ class WorldGenerator:
 
     DEFAULT_MODEL = "Meta-Llama-3.1-8B-Instruct-GGUF:Q4_K_M"
     DEFAULT_BASE_URL = "http://localhost:11434"
-    MAX_RETRIES = 1
+    MAX_RETRIES = 2
 
     def __init__(self, model: str = None, base_url: str = None):
         self.model = model or self.DEFAULT_MODEL
@@ -184,10 +184,34 @@ class WorldGenerator:
 
         quest_count = len(world_data.get('quests', []))
         quest_lines = "\n".join(
-            [f"[Compelling Quest Name]|[1 sentence quest objective, clear and specific]" for _ in range(quest_count)]
+            [f"[Creative Quest Name]|[1 sentence story-driven objective mentioning the specific generated names]" for _ in range(quest_count)]
         )
 
+        # Build quest relation hints so the LLM connects the right NPCs and Items
+        quest_hints = []
+        for i, q in enumerate(world_data.get('quests', [])):
+            q_type = q.get('quest_type', 'kill')
+            giver_id = q.get('giver_npc_id')
+            target_id = q.get('target_id')
+            
+            giver_idx = next((j+1 for j, n in enumerate(world_data.get('npcs', [])) if n['id'] == giver_id), "?")
+            
+            if q_type == 'kill':
+                target_idx = next((j+1 for j, n in enumerate(world_data.get('npcs', [])) if n['id'] == target_id), "?")
+                quest_hints.append(f"- Quest {i+1}: Given by NPC {giver_idx}, objective is to assassinate/defeat NPC {target_idx}.")
+            elif q_type == 'collect':
+                target_idx = next((j+1 for j, itm in enumerate(world_data.get('items', [])) if itm['id'] == target_id), "?")
+                quest_hints.append(f"- Quest {i+1}: Given by NPC {giver_idx}, objective is to find/steal Item {target_idx}.")
+            elif q_type == 'deliver':
+                target_idx = next((j+1 for j, itm in enumerate(world_data.get('items', [])) if itm['id'] == target_id), "?")
+                deliv_id = q.get('deliver_to')
+                deliv_idx = next((j+1 for j, n in enumerate(world_data.get('npcs', [])) if n['id'] == deliv_id), "?")
+                quest_hints.append(f"- Quest {i+1}: Given by NPC {giver_idx}, objective is to deliver Item {target_idx} to NPC {deliv_idx}.")
+
+        quest_hints_str = "\n".join(quest_hints)
+
         total_lines = room_count + item_count + npc_count + 1 + quest_count  # +1 for player
+
 
         system_prompt = f"""You are a world-builder for a {theme} text adventure game.
 Reply with EXACTLY {total_lines} pipe-separated (|) lines. NO markdown, NO numbered lists, NO extra text.
@@ -199,8 +223,13 @@ Naming rules:
 - NPC names: fit their role. Merchants sound mercantile. Enemies sound menacing. Neutral NPCs feel real.
 - Descriptions: exactly 1 sentence, atmospheric, max 15 words.
 - Dialogues: exactly 1 sentence, in-character, 8-14 words, hint at lore or quest.
-- Quest names: 3-5 words. Quest descriptions: 1 sentence with a clear objective.
 - Player line: a single heroic first name only (e.g. "Aldric", "Sera", "Vorn").
+
+Quest Rules:
+The quests MUST deeply tie into the lore and use the newly generated names based on these relations:
+{quest_hints_str}
+- Quest names: 3-5 creative words.
+- Quest descriptions: 1 sentence that connects the lore to the specific objective.
 
 Format:
 {room_lines}
@@ -232,7 +261,7 @@ The Sunken Compass|Retrieve the navigator's lost compass from the depths of Bloo
             "stream": True,
             "options": {
                 "temperature": 0.85,
-                "num_predict": 500,
+                "num_predict": 1500,
             }
         })
 
@@ -273,10 +302,11 @@ The Sunken Compass|Retrieve the navigator's lost compass from the depths of Bloo
         room_count = len(base_data.get('rooms', []))
         item_count = len(base_data.get('items', []))
         npc_count = len(base_data.get('npcs', []))
-        total_expected = room_count + item_count + npc_count + 1
+        quest_count = len(base_data.get('quests', []))
+        total_expected = room_count + item_count + npc_count + 1 + quest_count
 
         if len(lines) < total_expected:
-            print(f"\n   ⚠️ Warning: LLM produced incomplete data (expected {total_expected} lines, got {len(lines)}). Using defaults for the rest.")
+            raise ValueError(f"LLM produced incomplete data (expected {total_expected} lines, got {len(lines)}).")
 
         def safe_split(line, expected_parts):
             parts = line.split('|')

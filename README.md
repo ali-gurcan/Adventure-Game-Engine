@@ -2,57 +2,105 @@
 
 A robust, object-oriented, command-line RPG engine developed in Python. It features a scalable runtime system for interactive storytelling built with the Command, Factory, and Observer design patterns.
 
-## Features
+## 🚀 Key Features
 - **Object-Oriented Design**: Clean entity inheritance (Entity -> Player/NPC), aggregation between rooms and items.
-- **Dynamic Combat & Stats**: Player HP management, hostile NPC ambushes, item statistics (damage, healing).
-- **Design Patterns Applied**:
-  - `Command Pattern`: Processes natural language input parsing (`go`, `take`, `use`, `attack`).
-  - `Factory Pattern`: Generates world instances seamlessly through the game editor.
-  - `Observer Pattern`: Triggers background events and scene updates.
-- **Game Editor**: Built-in CLI authoring tool to generate and link game rooms, spawn items and NPCs without writing code.
+- **Dynamic AI World Generation**: Seamless integration with **Ollama** to procedurally generate dark fantasy, gothic, or high fantasy themed worlds, including NPC lore, dialogues, and quest narratives.
+- **Rich Terminal UI**: Beautiful, vibrant terminal interfaces powered by the `rich` library. Features dynamic **ASCII Arts**, emoji icons, stylized inventory tables, and a mini-map layout.
+- **Advanced Combat & Economy**:
+  - Tactical combat with weapon damage and armor defense calculations.
+  - Interactive economy system allowing you to trade gold with merchants.
+- **Dynamic Quest System**: Procedurally generated Kill, Collect, and Deliver quests uniquely tailored to each game session.
+- **Interactive NPC Chat**: Talk to intelligent NPCs whose behavior changes based on their role (hostile, merchant, or neutral) using LLM-driven responses.
+- **Game Editor**: Built-in CLI authoring tool to generate and link game rooms, spawn items and NPCs manually.
 - **JSON Serialization**: Full save & load functionality to securely preserve your state.
 
-## Installation
-Ensure you have Python 3 installed. No external package management or `requirements.txt` are needed since the project is built using powerful Python Standard Libraries.
+## ⚙️ Installation & Requirements
+
+Ensure you have Python 3 installed. The game utilizes the `rich` library for rendering the UI and requires `Ollama` if you wish to use the AI World Generator.
 
 ```bash
-# Clone the repository (If you haven't already locally)
+# 1. Clone the repository
 git clone https://github.com/ali-gurcan/Adventure-Game-Engine.git
 cd Adventure-Game-Engine
+
+# 2. Install Python dependencies
+pip install rich
+
+# 3. (Optional) Install Ollama for AI generation
+# Follow instructions at https://ollama.com/
+# Ensure the model (default: Meta-Llama-3.1-8B-Instruct-GGUF:Q4_K_M) is pulled and running locally on port 11434.
 ```
 
-## How to Play
+## 🎮 How to Play
 
-Start the runtime engine by loading a JSON world file instance:
+You can use the provided `Makefile` to quickly start the game, or run the Python scripts manually.
+
 ```bash
-# Example with the included fantasy map:
+# Generate a completely new dynamic world using AI
+make generate
+
+# Or manually:
+python3 main.py generate
+```
+
+```bash
+# Play an existing save file or base template
+make play
+
+# Or manually:
 python3 main.py play test_world2.json
 ```
 
-**In-Game Commands:**
-- `look` — Observe your current surroundings, seeing exits, items, and characters.
-- `go <direction>` or `move <direction>` — Move between rooms (e.g., `go north`, `go east`).
-- `take <item>` or `get <item>` — Pick an item up from the ground to put in your inventory.
-- `inventory` or `inv` or `i` — Check the items currently in your bag and view your HP limit.
-- `inspect <item>` or `examine <item>` — Look closely at an item in the room or in your inventory to see its stats (Damage numbers or HP healing yield).
-- `attack <npc_name>` — Engage in combat. It automatically uses your strongest weapon from your inventory.
-- `use <item>` / `eat <item>` / `drink <item>` — Consume a consumable item to restore HP (e.g., `eat apple`).
-- `escape` — Hastily retreat to the previous room you came from if things go bad.
-- `quit` or `exit` — Saves the current game state to a JSON file and gracefully safely exits the game.
+## 📜 In-Game Commands
 
-## World Builder (Game Editor)
+**Exploration & Environment:**
+- `look` — Observe your current surroundings, seeing exits, items, characters, and beautiful ASCII art.
+- `map` — View the local 2D ASCII map of discovered rooms.
+- `go <direction>` / `move <direction>` — Move between rooms (e.g., `go north`, `go east`).
+- `escape` — Hastily retreat to the previous room you came from if things go bad in an ambush.
+
+**Items & Inventory:**
+- `take <item>` / `get <item>` — Pick an item up from the ground to put in your inventory.
+- `inventory` / `inv` / `i` — Open your stylized backpack to view your items, stats, and total gold.
+- `inspect <item>` / `examine <item>` — Look closely at an item to see its detailed stats (Damage, Heal, Defense, Value).
+- `use <item>` / `eat <item>` / `drink <item>` — Consume a consumable item to restore HP.
+
+**NPCs & Interaction:**
+- `talk <npc_name>` — Initiate a dynamic LLM-driven chat with an NPC.
+- `quests` — View your Quest Journal, displaying active and completed objectives.
+- `attack <npc_name>` — Engage in tactical combat. Automatically calculates your total damage and defense.
+
+**Trading & Economy:**
+- `shop` — View the list of items a merchant has for sale in the current room.
+- `buy <item_name>` — Purchase an item from a merchant using your gold.
+- `sell <item_name>` — Sell an item from your inventory to a merchant for half its value.
+
+**System Commands:**
+- `quit` / `exit` — Saves the current game state to `save_data.json` and gracefully exits the game.
+
+## 🛠️ World Builder (Game Editor)
 
 You can craft your own unique map files and adventures entirely through the terminal. Launch the editor using:
 
 ```bash
-python3 main.py editor
+make editor
+# or python3 main.py editor
 ```
 
 The Editor provides a simple menu to guide you through:
 1. Creating Rooms, Items, and NPCs.
 2. Linking Rooms via directions (North, South, etc.).
 3. Setting enemy Logic (neutral vs hostile, setting their HP and Damage points).
-4. Exporting everything into a `<world_name>.json` file, which can then be played using the `play` command.
+4. Exporting everything into a `<world_name>.json` file.
+
+## 🧪 Testing
+
+The engine includes a full automated test scenario that spins up the AI Generator, navigates the map, completes quests, buys items, and tests all commands automatically.
+
+```bash
+make test
+# or python3 auto_test.py
+```
 
 ---
 *Developed as a Term Project for CSE 444 Software Engineering II*
