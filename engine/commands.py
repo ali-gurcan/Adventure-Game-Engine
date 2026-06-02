@@ -1,6 +1,33 @@
 from abc import ABC, abstractmethod
 from engine import colors as c
 
+
+def _check_quest_completion(engine_sys, event_type: str, target_id: str):
+    """Shared helper: checks if any active quest is completed by this event."""
+    player = engine_sys.state.player
+    quests = engine_sys.state.quests
+
+    for q_id in list(player.active_quests):
+        quest = quests.get(q_id)
+        if not quest or quest.status != 'active':
+            continue
+
+        completed = False
+        if quest.quest_type == 'kill' and event_type == 'npc_killed' and quest.target_id == target_id:
+            completed = True
+        elif quest.quest_type == 'collect' and event_type == 'item_taken' and quest.target_id == target_id:
+            completed = True
+        # 'deliver' is handled separately in TalkCommand
+
+        if completed:
+            quest.status = 'completed'
+            player.active_quests.remove(q_id)
+            player.completed_quests.append(q_id)
+            player.gold += quest.reward_gold
+            print(f"\n{c.success('✨ QUEST COMPLETED!')} {c.bold(quest.name)}")
+            print(f"  {c.narration(quest.description)}")
+            print(f"  💰 Reward: {c.gold(quest.reward_gold)}")
+
 class Command(ABC):
     def __init__(self, engine_sys):
         self.engine_sys = engine_sys
@@ -48,6 +75,8 @@ class TakeCommand(Command):
                 self.engine_sys.state.player.inventory.append(itm)
                 print(f"You picked up the {c.item_bold(itm.name)}.")
                 self.engine_sys.event_bus.notify("item_taken", {"item_id": itm.id})
+                # Check collect quests
+                _check_quest_completion(self.engine_sys, 'item_taken', itm.id)
                 return
         print(c.dim("I don't see that here."))
 
@@ -159,6 +188,8 @@ class AttackCommand(Command):
             print(f"  💰 You found {c.gold(gold_reward)} on the body!")
             room.npcs.remove(npc_target)
             self.engine_sys.event_bus.notify("npc_defeated", {"npc_id": npc_target.id})
+            # Check kill quests
+            _check_quest_completion(self.engine_sys, 'npc_killed', npc_target.id)
         else:
             if npc_target.npc_type == "hostile":
                 ret_dmg = getattr(npc_target, 'damage', 10)
@@ -206,6 +237,69 @@ class UseCommand(Command):
 class TalkCommand(Command):
     """Interactive LLM-powered conversation with any NPC. Type 'bye' to exit."""
 
+    def _offer_quests(self, npc_target, npc_color):
+        """Check if this NPC has available quests to offer."""
+        player = self.engine_sys.state.player
+        quests = self.engine_sys.state.quests
+        offered = False
+
+        for quest in quests.values():
+            if quest.giver_npc_id != npc_target.id:
+                continue
+            if quest.status != 'available':
+                continue
+            if quest.id in player.active_quests or quest.id in player.completed_quests:
+                continue
+
+            # Offer the quest
+            print(f"\n{c.BOLD_CYAN}📜 QUEST AVAILABLE:{c.RESET} {c.bold(quest.name)}")
+            print(f"   {c.narration(quest.description)}")
+            print(f"   Reward: {c.gold(quest.reward_gold)}")
+            try:
+                answer = input(f"   Accept this quest? ({c.success('yes')}/{c.damage('no')}): ").strip().lower()
+            except (EOFError, KeyboardInterrupt):
+                answer = 'no'
+
+            if answer in ('yes', 'y', 'evet', 'accept'):
+                quest.status = 'active'
+                player.active_quests.append(quest.id)
+                print(f"   {c.success('✅ Quest accepted!')}")
+                offered = True
+            else:
+                print(f"   {c.dim('Quest declined.')}")
+
+        return offered
+
+    def _check_deliver_quests(self, npc_target, npc_color):
+        """Check if the player can complete a deliver quest with this NPC."""
+        player = self.engine_sys.state.player
+        quests = self.engine_sys.state.quests
+
+        for q_id in list(player.active_quests):
+            quest = quests.get(q_id)
+            if not quest or quest.quest_type != 'deliver':
+                continue
+            if quest.deliver_to != npc_target.id:
+                continue
+
+            # Check if player has the required item
+            has_item = any(itm.id == quest.target_id for itm in player.inventory)
+            if has_item:
+                # Remove item from inventory
+                for itm in list(player.inventory):
+                    if itm.id == quest.target_id:
+                        player.inventory.remove(itm)
+                        print(f"\n  You hand over the {c.item_bold(itm.name)} to {npc_color(npc_target.name)}.")
+                        break
+
+                quest.status = 'completed'
+                player.active_quests.remove(q_id)
+                player.completed_quests.append(q_id)
+                player.gold += quest.reward_gold
+                print(f"\n{c.success('✨ QUEST COMPLETED!')} {c.bold(quest.name)}")
+                print(f"  {c.narration(quest.description)}")
+                print(f"  💰 Reward: {c.gold(quest.reward_gold)}")
+
     def execute(self, args: list):
         if not args:
             print(c.warning("Talk to whom?"))
@@ -228,6 +322,13 @@ class TalkCommand(Command):
         # Show initial static dialogue as greeting
         npc_color = c.enemy if npc_target.npc_type == "hostile" else (c.merchant if npc_target.npc_type == "merchant" else c.info)
         print(f"\n{npc_color(npc_target.name)}: \"{c.narration(npc_target.dialogue)}\"")
+
+        # Check for deliver quest completion
+        self._check_deliver_quests(npc_target, npc_color)
+
+        # Offer available quests from this NPC
+        self._offer_quests(npc_target, npc_color)
+
         print(c.dim(f"(You are now talking to {npc_target.name}. Type 'bye' to end the conversation.)"))
 
         # Interactive LLM dialogue loop
@@ -532,3 +633,54 @@ class MapCommand(Command):
                 line = line.replace("[*", f"{c.BOLD_GREEN}[*").replace("*]", f"*]{c.RESET}")
                 print(line)
         print(c.DIM + "=" * min(canvas_w, 60) + c.RESET)
+
+
+class QuestsCommand(Command):
+    """Shows the player's active and completed quests."""
+
+    def execute(self, args: list):
+        player = self.engine_sys.state.player
+        quests = self.engine_sys.state.quests
+
+        print(f"\n{c.BOLD_CYAN}📜 QUEST JOURNAL{c.RESET}")
+        print(c.DIM + "=" * 40 + c.RESET)
+
+        # Active quests
+        active = [quests[q_id] for q_id in player.active_quests if q_id in quests]
+        if active:
+            print(f"\n{c.bold('Active Quests:')}")
+            for quest in active:
+                type_icon = {"kill": "⚔️", "collect": "🎒", "deliver": "📦"}.get(quest.quest_type, "❓")
+                print(f"  {type_icon} {c.warning(quest.name)}")
+                print(f"     {c.narration(quest.description)}")
+                # Show progress hint
+                if quest.quest_type == "kill":
+                    target_alive = quest.target_id in self.engine_sys.state.npcs
+                    status = c.damage("Not defeated yet") if target_alive else c.success("Target eliminated!")
+                    print(f"     Status: {status}")
+                elif quest.quest_type == "collect":
+                    has_item = any(itm.id == quest.target_id for itm in player.inventory)
+                    status = c.success("Item collected!") if has_item else c.damage("Item not found yet")
+                    print(f"     Status: {status}")
+                elif quest.quest_type == "deliver":
+                    has_item = any(itm.id == quest.target_id for itm in player.inventory)
+                    if has_item:
+                        # Find deliver target name
+                        deliver_npc = self.engine_sys.state.npcs.get(quest.deliver_to)
+                        npc_name = deliver_npc.name if deliver_npc else quest.deliver_to
+                        status = c.warning(f"Deliver to {npc_name}")
+                    else:
+                        status = c.damage("Item not found yet")
+                    print(f"     Status: {status}")
+                print(f"     Reward: {c.gold(quest.reward_gold)}")
+        else:
+            print(f"\n{c.dim('No active quests. Talk to NPCs to find quests!')}")
+
+        # Completed quests
+        completed = [quests[q_id] for q_id in player.completed_quests if q_id in quests]
+        if completed:
+            print(f"\n{c.bold('Completed Quests:')}")
+            for quest in completed:
+                print(f"  ✅ {c.dim(quest.name)}")
+
+        print(c.DIM + "\n" + "=" * 40 + c.RESET)

@@ -2,13 +2,12 @@
     "rooms": [
         {
             "id": "room_village",
-            "name": "Dungeon Entrance",
-            "description": "Darkness and damp air. Exits: 'north', 'east'.",
+            "name": "Mushroom Forest",
+            "description": "Mysterious glowing caps. Exits: 'north'.",
             "x": 0,
             "y": 1,
             "exits": {
-                "north": "room_forest",
-                "east": "room_market"
+                "north": "room_forest"
             },
             "item_ids": [
                 "item_apple"
@@ -18,29 +17,14 @@
             ]
         },
         {
-            "id": "room_market",
-            "name": "Mysterious Temple",
-            "description": "Ancient stone structures. Exits: 'west'.",
-            "x": 1,
-            "y": 1,
-            "exits": {
-                "west": "room_village"
-            },
-            "item_ids": [
-                "item_shield"
-            ],
-            "npc_ids": [
-                "npc_merchant"
-            ]
-        },
-        {
             "id": "room_forest",
-            "name": "Treacherous Swamp",
-            "description": "Murky waters and mud. Exits: 'south'.",
+            "name": "Dungeon Entrance",
+            "description": "Darkness and danger lurks. Exits: 'south', 'north'.",
             "x": 0,
             "y": 0,
             "exits": {
-                "south": "room_village"
+                "south": "room_village",
+                "north": "room_cave"
             },
             "item_ids": [
                 "item_sword"
@@ -48,81 +32,100 @@
             "npc_ids": [
                 "npc_goblin"
             ]
+        },
+        {
+            "id": "room_cave",
+            "name": "Castle Gate",
+            "description": "A grand iron gate. Exits: 'south'.",
+            "x": 0,
+            "y": -1,
+            "exits": {
+                "south": "room_forest"
+            },
+            "item_ids": [
+                "item_potion"
+            ],
+            "npc_ids": []
         }
     ],
     "items": [
         {
             "id": "item_apple",
-            "name": "Magic Crystal",
-            "description": "Glowing blue orb.",
+            "name": "Mithril Shield",
+            "description": "Reflective silver metal plate.",
             "item_type": "consumable",
             "stats": {
-                "heal": 52
+                "heal": 48
             },
             "value": 5
         },
         {
             "id": "item_sword",
-            "name": "Enchanted Amulet",
-            "description": "Glows with soft light.",
+            "name": "Healing Crystal",
+            "description": "Glowing blue crystal orb.",
             "item_type": "weapon",
             "stats": {
-                "damage": 27
+                "damage": 21
             },
-            "value": 31
+            "value": 20
         },
         {
-            "id": "item_shield",
-            "name": "Battle Axe",
-            "description": "Heavy wooden handle.",
-            "item_type": "armor",
+            "id": "item_potion",
+            "name": "Dragon's Tooth",
+            "description": "Sharp, serrated fang.",
+            "item_type": "consumable",
             "stats": {
-                "defense": 6
+                "heal": 45
             },
-            "value": 34
+            "value": 30
         }
     ],
     "npcs": [
         {
             "id": "npc_villager",
             "type": "NPC",
-            "name": "Wizard Elf",
-            "description": "Pointy ears and staff.",
-            "hp": 84,
-            "dialogue": "I sense danger.",
+            "name": "Elara",
+            "description": "A mysterious elf woman.",
+            "hp": 189,
+            "dialogue": "Follow me!",
             "npc_type": "neutral",
-            "damage": 0
-        },
-        {
-            "id": "npc_merchant",
-            "type": "NPC",
-            "name": "Merchant Thorold",
-            "description": "A stout dwarf trader.",
-            "hp": 160,
-            "dialogue": "Greetings, adventurer!",
-            "npc_type": "merchant",
             "damage": 0
         },
         {
             "id": "npc_goblin",
             "type": "NPC",
-            "name": "Village Healer",
-            "description": "An old wise woman.",
-            "hp": 150,
-            "dialogue": "Take this potion.",
+            "name": "Thorne",
+            "description": "A gruff old blacksmith.",
+            "hp": 95,
+            "dialogue": "What do you need?",
             "npc_type": "hostile",
-            "damage": 11
+            "damage": 30
         }
     ],
     "player": {
         "id": "player_hero2",
         "type": "Player",
-        "name": "Sir Valoric",
-        "description": "A noble knight on horseback.",
-        "hp": 137,
-        "gold": 31,
+        "name": "Eryndor Thorne",
+        "description": "A brave and skilled warrior.",
+        "hp": 187,
+        "gold": 45,
         "inventory": [],
+        "active_quests": [],
+        "completed_quests": [],
         "current_room_id": "room_village",
         "previous_room_id": null
-    }
+    },
+    "quests": [
+        {
+            "id": "quest_kill_goblin",
+            "name": "The Lost Scroll",
+            "description": "Find the ancient text.",
+            "quest_type": "kill",
+            "target_id": "npc_goblin",
+            "deliver_to": null,
+            "giver_npc_id": "npc_villager",
+            "reward_gold": 30,
+            "status": "available"
+        }
+    ]
 }

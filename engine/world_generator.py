@@ -126,6 +126,21 @@ class WorldGenerator:
         data['items'] = [i for i in data.get('items', []) if i['id'] in kept_item_ids]
         data['npcs'] = [n for n in data.get('npcs', []) if n['id'] in kept_npc_ids]
         
+        # Trim quests — keep only those whose giver AND target are still in the game
+        kept_quests = []
+        for q in data.get('quests', []):
+            giver_ok = q.get('giver_npc_id') in kept_npc_ids
+            target_id = q.get('target_id', '')
+            # Target can be an NPC (kill) or item (collect/deliver)
+            target_ok = target_id in kept_npc_ids or target_id in kept_item_ids
+            # For deliver quests, deliver_to NPC must also exist
+            deliver_ok = True
+            if q.get('quest_type') == 'deliver' and q.get('deliver_to'):
+                deliver_ok = q['deliver_to'] in kept_npc_ids
+            if giver_ok and target_ok and deliver_ok:
+                kept_quests.append(q)
+        data['quests'] = kept_quests
+        
         return data
 
     def _build_request(self, world_data: dict) -> str:
@@ -134,7 +149,6 @@ class WorldGenerator:
         room_count = len(world_data.get('rooms', []))
         item_count = len(world_data.get('items', []))
         npc_count = len(world_data.get('npcs', []))
-        total_lines = room_count + item_count + npc_count + 1  # +1 for player
         
         # Build dynamic format section
         room_lines = "\n".join([f"[Room {i+1} Name]|[Very short description]" for i in range(room_count)])
@@ -150,8 +164,13 @@ class WorldGenerator:
                 npc_format_lines.append("[NPC Name]|[Very short desc]|[Very short dialogue]")
         npc_lines = "\n".join(npc_format_lines)
         
+        # Quest format
+        quest_count = len(world_data.get('quests', []))
+        quest_lines = "\n".join([f"[Quest Name]|[Very short quest description]" for _ in range(quest_count)])
+        total_lines = room_count + item_count + npc_count + 1 + quest_count  # +1 for player
+        
         system_prompt = f"""You are a game generator. Reply with EXACTLY {total_lines} lines of pipe-separated (|) text. NO markdown, NO intro.
-Order: {room_count} Rooms, {item_count} Items, {npc_count} NPCs, 1 Player.
+Order: {room_count} Rooms, {item_count} Items, {npc_count} NPCs, 1 Player, {quest_count} Quests.
 Keep descriptions and dialogues EXTREMELY short (max 3-5 words) to save time!
 
 Format:
@@ -159,6 +178,7 @@ Format:
 {item_lines}
 {npc_lines}
 [Player Name]|[Very short desc]
+{quest_lines}
 
 Example:
 Village Square|A peaceful cobblestone square.
@@ -170,7 +190,9 @@ Gold Ring|A shiny plain band.
 Villager|A scared looking man.|Please help us!
 Goblin|A green ugly monster.|Argh! Die!
 Old Wizard|A wise old man.|Take this wand.
-Sir Boramir|A brave and noble knight."""
+Sir Boramir|A brave and noble knight.
+Goblin Hunt|Slay the forest beast.
+The Lost Crown|Return the king's crown."""
 
         user_prompt = f"Generate {self.theme} fantasy game objects. Seed: {variety_seed}"
 
@@ -181,7 +203,7 @@ Sir Boramir|A brave and noble knight."""
             "stream": True,
             "options": {
                 "temperature": 0.8,
-                "num_predict": 200
+                "num_predict": 250
             }
         })
 
@@ -282,6 +304,16 @@ Sir Boramir|A brave and noble knight."""
             player['description'] = parts[1]
             player['hp'] = random.randint(100, 200)
             player['gold'] = random.randint(30, 80)
+
+        # Quests (after player)
+        quests = base_data.get('quests', [])
+        quest_count = len(quests)
+        for i in range(quest_count):
+            idx = room_count + item_count + npc_count + 1 + i
+            if idx < len(lines):
+                parts = safe_split(lines[idx], 2)
+                quests[i]['name'] = parts[0]
+                quests[i]['description'] = parts[1]
 
         return base_data
 

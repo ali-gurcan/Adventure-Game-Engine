@@ -248,7 +248,43 @@
         "hp": 100,
         "gold": 50,
         "inventory": [],
+        "active_quests": [],
+        "completed_quests": [],
         "current_room_id": "room_village",
         "previous_room_id": null
-    }
+    },
+    "quests": [
+        {
+            "id": "quest_kill_goblin",
+            "name": "Goblin Hunt",
+            "description": "Defeat the goblin lurking in the dark forest.",
+            "quest_type": "kill",
+            "target_id": "npc_goblin",
+            "deliver_to": null,
+            "giver_npc_id": "npc_villager",
+            "reward_gold": 30,
+            "status": "available"
+        },
+        {
+            "id": "quest_deliver_crown",
+            "name": "The Lost Crown",
+            "description": "Find the golden crown and return it to the Ghost King.",
+            "quest_type": "deliver",
+            "target_id": "item_crown",
+            "deliver_to": "npc_king",
+            "giver_npc_id": "npc_wizard",
+            "reward_gold": 50,
+            "status": "available"
+        },
+        {
+            "id": "quest_collect_wand",
+            "name": "Wizard's Lost Wand",
+            "description": "Find the wizard's lost magical wand in the forest.",
+            "quest_type": "collect",
+            "target_id": "item_wand",
+            "giver_npc_id": "npc_wizard",
+            "reward_gold": 25,
+            "status": "available"
+        }
+    ]
 }

@@ -19,6 +19,8 @@ class Player(Entity):
         self.current_room_id = current_room_id
         self.previous_room_id = previous_room_id
         self.gold = gold
+        self.active_quests = []      # list of quest IDs
+        self.completed_quests = []   # list of quest IDs
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -29,6 +31,8 @@ class Player(Entity):
             "hp": self.hp,
             "gold": self.gold,
             "inventory": [item.id for item in self.inventory],
+            "active_quests": self.active_quests,
+            "completed_quests": self.completed_quests,
             "current_room_id": self.current_room_id,
             "previous_room_id": self.previous_room_id
         }

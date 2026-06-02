@@ -1,6 +1,7 @@
 from engine.commands import (GoCommand, LookCommand, TakeCommand, InventoryCommand,
                               EscapeCommand, InspectCommand, AttackCommand, UseCommand,
-                              MapCommand, TalkCommand, BuyCommand, SellCommand, ShopCommand)
+                              MapCommand, TalkCommand, BuyCommand, SellCommand, ShopCommand,
+                              QuestsCommand)
 
 class Parser:
     def __init__(self, engine_sys):
@@ -29,6 +30,9 @@ class Parser:
             "sell": SellCommand(engine_sys),
             "shop": ShopCommand(engine_sys),
             "wares": ShopCommand(engine_sys),
+            "quests": QuestsCommand(engine_sys),
+            "quest": QuestsCommand(engine_sys),
+            "journal": QuestsCommand(engine_sys),
         }
 
     def parse_and_execute(self, input_str: str):
@@ -45,4 +49,4 @@ class Parser:
         if cmd:
             cmd.execute(args)
         else:
-            print("I don't understand that command. Try 'look', 'go', 'take', 'use', 'escape', 'inspect', 'attack', 'talk', 'buy', 'sell', or 'shop'.")
+            print("I don't understand that command. Try 'look', 'go', 'take', 'use', 'escape', 'inspect', 'attack', 'talk', 'buy', 'sell', 'shop', or 'quests'.")

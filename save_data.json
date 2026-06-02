@@ -2,32 +2,32 @@
     "rooms": [
         {
             "id": "room_village",
-            "name": "Dungeon Entrance",
-            "description": "Darkness and damp air. Exits: 'north', 'east'.",
+            "name": "Tower Keep",
+            "description": "Ancient stone fortress remains. Exits: 'north', 'east'.",
             "x": 0,
             "y": 1,
             "exits": {
                 "north": "room_forest",
                 "east": "room_market"
             },
-            "item_ids": [
-                "item_apple"
-            ],
+            "item_ids": [],
             "npc_ids": [
                 "npc_villager"
             ]
         },
         {
             "id": "room_market",
-            "name": "Mysterious Temple",
-            "description": "Ancient stone structures. Exits: 'west'.",
+            "name": "Forest Glade",
+            "description": "A sunny woodland clearing. Exits: 'west', 'north'.",
             "x": 1,
             "y": 1,
             "exits": {
-                "west": "room_village"
+                "west": "room_village",
+                "north": "room_tower"
             },
             "item_ids": [
-                "item_shield"
+                "item_shield",
+                "item_apple"
             ],
             "npc_ids": [
                 "npc_merchant"
@@ -35,12 +35,14 @@
         },
         {
             "id": "room_forest",
-            "name": "Treacherous Swamp",
-            "description": "Murky waters and mud. Exits: 'south'.",
+            "name": "Dark Cave",
+            "description": "Damp, dark underground space. Exits: 'south', 'east', 'north'.",
             "x": 0,
             "y": 0,
             "exits": {
-                "south": "room_village"
+                "south": "room_village",
+                "east": "room_tower",
+                "north": "room_cave"
             },
             "item_ids": [
                 "item_sword"
@@ -48,81 +50,170 @@
             "npc_ids": [
                 "npc_goblin"
             ]
+        },
+        {
+            "id": "room_tower",
+            "name": "Abandoned Mine",
+            "description": "Old mine tunnels collapse nearby. Exits: 'west', 'south'.",
+            "x": 1,
+            "y": 0,
+            "exits": {
+                "west": "room_forest",
+                "south": "room_market"
+            },
+            "item_ids": [
+                "item_wand"
+            ],
+            "npc_ids": [
+                "npc_wizard"
+            ]
+        },
+        {
+            "id": "room_cave",
+            "name": "Haunted Mansion",
+            "description": "Creepy abandoned house looms. Exits: 'south'.",
+            "x": 0,
+            "y": -1,
+            "exits": {
+                "south": "room_forest"
+            },
+            "item_ids": [
+                "item_potion"
+            ],
+            "npc_ids": []
         }
     ],
     "items": [
         {
             "id": "item_apple",
-            "name": "Magic Crystal",
-            "description": "Glowing blue orb.",
+            "name": "Healing Potion",
+            "description": "Glowing blue magical elixir.",
             "item_type": "consumable",
             "stats": {
-                "heal": 52
+                "heal": 31
             },
-            "value": 5
+            "value": 9
         },
         {
             "id": "item_sword",
-            "name": "Enchanted Amulet",
-            "description": "Glows with soft light.",
+            "name": "Enchanted Cloak",
+            "description": "Magical cloak glows softly.",
             "item_type": "weapon",
             "stats": {
-                "damage": 27
+                "damage": 46
             },
-            "value": 31
+            "value": 42
+        },
+        {
+            "id": "item_wand",
+            "name": "Mystic Crystal",
+            "description": "Rare and precious crystal shard.",
+            "item_type": "weapon",
+            "stats": {
+                "damage": 20
+            },
+            "value": 71
         },
         {
             "id": "item_shield",
-            "name": "Battle Axe",
-            "description": "Heavy wooden handle.",
+            "name": "Golden Chalice",
+            "description": "Shiny ornate drinking vessel.",
             "item_type": "armor",
             "stats": {
                 "defense": 6
             },
-            "value": 34
+            "value": 43
+        },
+        {
+            "id": "item_potion",
+            "name": "Rusty Gauntlets",
+            "description": "Crusted with dirt and metal.",
+            "item_type": "consumable",
+            "stats": {
+                "heal": 49
+            },
+            "value": 42
         }
     ],
     "npcs": [
         {
             "id": "npc_villager",
             "type": "NPC",
-            "name": "Wizard Elf",
-            "description": "Pointy ears and staff.",
-            "hp": 84,
-            "dialogue": "I sense danger.",
+            "name": "Villager",
+            "description": "A scared looking man.",
+            "hp": 180,
+            "dialogue": "Please help us!",
             "npc_type": "neutral",
             "damage": 0
         },
         {
             "id": "npc_merchant",
             "type": "NPC",
-            "name": "Merchant Thorold",
-            "description": "A stout dwarf trader.",
+            "name": "Goblin King",
+            "description": "Ugly green monster.",
             "hp": 160,
-            "dialogue": "Greetings, adventurer!",
+            "dialogue": "Argh! Die now!",
             "npc_type": "merchant",
             "damage": 0
         },
         {
             "id": "npc_goblin",
             "type": "NPC",
-            "name": "Village Healer",
-            "description": "An old wise woman.",
-            "hp": 150,
-            "dialogue": "Take this potion.",
+            "name": "Wizard Zorvath",
+            "description": "Ancient powerful wizard.",
+            "hp": 68,
+            "dialogue": "Seek my aid.",
             "npc_type": "hostile",
-            "damage": 11
+            "damage": 25
+        },
+        {
+            "id": "npc_wizard",
+            "type": "NPC",
+            "name": "Sir Valoric",
+            "description": "Brave young knight.",
+            "hp": 139,
+            "dialogue": "Honor is key.",
+            "npc_type": "neutral",
+            "damage": 0
+        }
+    ],
+    "quests": [
+        {
+            "id": "quest_kill_goblin",
+            "name": "Slay the Goblin",
+            "description": "Destroy the forest beast.",
+            "quest_type": "kill",
+            "target_id": "npc_goblin",
+            "deliver_to": null,
+            "giver_npc_id": "npc_villager",
+            "reward_gold": 30,
+            "status": "active"
+        },
+        {
+            "id": "quest_collect_wand",
+            "name": "Recover the Scepter",
+            "description": "Find the king's royal symbol.",
+            "quest_type": "collect",
+            "target_id": "item_wand",
+            "deliver_to": null,
+            "giver_npc_id": "npc_wizard",
+            "reward_gold": 25,
+            "status": "available"
         }
     ],
     "player": {
         "id": "player_hero2",
         "type": "Player",
-        "name": "Sir Valoric",
-        "description": "A noble knight on horseback.",
-        "hp": 137,
-        "gold": 31,
+        "name": "Eryndor Thorne",
+        "description": "Human rogue with short sword.",
+        "hp": 27,
+        "gold": 42,
         "inventory": [],
-        "current_room_id": "room_village",
-        "previous_room_id": null
+        "active_quests": [
+            "quest_kill_goblin"
+        ],
+        "completed_quests": [],
+        "current_room_id": "room_forest",
+        "previous_room_id": "room_village"
     }
 }
