@@ -28,8 +28,24 @@ pip install rich
 
 # 3. (Optional) Install Ollama for AI generation
 # Follow instructions at https://ollama.com/
-# Ensure the model (default: Meta-Llama-3.1-8B-Instruct-GGUF:Q4_K_M) is pulled and running locally on port 11434.
 ```
+
+## 🧠 AI World Generation (Ollama Manual)
+
+To unlock the procedural generation capabilities (`make generate`), you must run a local Large Language Model via **Ollama**.
+
+1. **Download & Install:** Visit [Ollama.com](https://ollama.com/) and install it for your OS.
+2. **Setup the Required Model:** The engine is specifically fine-tuned for Llama 3.1 8B. It expects the following specific model (or an equivalent) to be available in your local Ollama library:
+   - **Model Name:** `Meta-Llama-3.1-8B-Instruct-GGUF:Q4_K_M`
+   - **ID:** `d4d7942fcda0`
+
+   *(If you are pulling a fresh, standard model instead, you can run `ollama run llama3.1` in your terminal).*
+3. **Changing the Model:** If you don't have the exact custom GGUF model mentioned above, you can change the AI model the game points to. Open `engine/world_generator.py` and modify line 24:
+   ```python
+   DEFAULT_MODEL = "llama3.1" # Change this to the model name you pulled
+   ```
+4. **Running the Game:** Ensure the Ollama app is open in the background (running on `http://localhost:11434`), then run `make generate`. The engine will connect locally to Ollama and dynamically generate your map!
+
 
 ## 🎮 How to Play
 

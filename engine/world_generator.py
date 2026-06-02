@@ -223,7 +223,7 @@ Naming rules:
 - NPC names: fit their role. Merchants sound mercantile. Enemies sound menacing. Neutral NPCs feel real.
 - Descriptions: exactly 1 sentence, atmospheric, max 15 words.
 - Dialogues: exactly 1 sentence, in-character, 8-14 words, hint at lore or quest.
-- Player line: a single heroic first name only (e.g. "Aldric", "Sera", "Vorn").
+- Player line: a single heroic first name only (e.g. "Aldric|Hero", "Sera|Hero").
 
 Quest Rules:
 The quests MUST deeply tie into the lore and use the newly generated names based on these relations:
@@ -235,7 +235,7 @@ Format:
 {room_lines}
 {item_lines}
 {npc_lines}
-[Hero's first name only]
+[Hero's first name only]|Hero
 {quest_lines}
 
 Example output:
@@ -248,7 +248,7 @@ Gravewarden Shield|A shield etched with the names of every warrior who ever carr
 Mira the Undying|A pale merchant who sells only by candlelight and never blinks.|Step closer, traveler; I carry wares the living rarely dare to buy.
 Grask the Bone-Render|A skeleton animated by dark sorcery, its joints wrapped in rusted chain.|Your bones will join my collection before this night is through.
 Elara of the Mire|A swamp-witch whose eyes hold centuries of cold, patient malice.|The thing you seek lies where the roots drink from the forgotten dead.
-Kael
+Kael|Hero
 Bone-Render's End|Defeat Grask the Bone-Render haunting Ashen Hollow to lift the curse.
 The Sunken Compass|Retrieve the navigator's lost compass from the depths of Blood Mire."""
 
