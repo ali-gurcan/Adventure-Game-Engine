@@ -23,7 +23,7 @@ class WorldGenerator:
 
     DEFAULT_MODEL = "Meta-Llama-3.1-8B-Instruct-GGUF:Q4_K_M"
     DEFAULT_BASE_URL = "http://localhost:11434"
-    MAX_RETRIES = 2
+    MAX_RETRIES = 4
 
     def __init__(self, model: str = None, base_url: str = None):
         self.model = model or self.DEFAULT_MODEL
@@ -41,7 +41,7 @@ class WorldGenerator:
             raise RuntimeError(f"❌ Could not load base template: {e}")
 
         # 2. Randomly select 4-7 CONNECTED rooms from the template
-        room_count = random.randint(4, 7)
+        room_count = random.randint(4, 6)
         world_data = self._trim_world(world_data, room_count)
         actual_room_count = len(world_data.get('rooms', []))
         print(f"   🏰 Room count: {actual_room_count}")
@@ -296,17 +296,60 @@ The Sunken Compass|Retrieve the navigator's lost compass from the depths of Bloo
         return raw_text
 
     def _apply_replacements(self, base_data: dict, raw_text: str) -> dict:
-        """Injects the LLM generated short lore into the base JSON structure"""
-        lines = [line.strip() for line in raw_text.strip().split('\n') if '|' in line]
+        """Injects the LLM generated lore into the base JSON structure.
         
-        room_count = len(base_data.get('rooms', []))
-        item_count = len(base_data.get('items', []))
-        npc_count = len(base_data.get('npcs', []))
-        quest_count = len(base_data.get('quests', []))
-        total_expected = room_count + item_count + npc_count + 1 + quest_count
+        Strategy: player name line may or may not have a | character.
+        We detect it separately from the raw text, then parse pipe-lines
+        for rooms/items/npcs/quests without counting the player line.
+        """
+        # --- 1. Find the player name from raw text ---
+        # The player line is a short (1-2 words) line with no | OR a line like "Name|Hero"
+        player_name_candidate = None
+        raw_lines_all = [l.strip() for l in raw_text.strip().split('\n') if l.strip()]
+        for raw_line in raw_lines_all:
+            parts = raw_line.split('|')
+            first = parts[0].strip()
+            # A valid player name: 1-2 words, no numbers, short (looks like a real name)
+            words = first.split()
+            if (len(parts) <= 2 and len(words) <= 2 and len(first) <= 24
+                    and first.isalpha() or (len(words) == 2 and all(w.isalpha() for w in words))):
+                # Extra guard: second part (if any) should be exactly "Hero" or short
+                second = parts[1].strip() if len(parts) > 1 else ""
+                if second in ("", "Hero", "Protagonist", "Player") or len(second) <= 12:
+                    player_name_candidate = first
+                    # Don't break yet — keep searching in case it's ambiguous;
+                    # take the first qualifying single-word candidate
+                    if len(words) == 1:
+                        break
 
-        if len(lines) < total_expected:
-            raise ValueError(f"LLM produced incomplete data (expected {total_expected} lines, got {len(lines)}).")
+        # --- 2. Extract pipe-delimited data lines (rooms/items/npcs/quests only) ---
+        # We exclude the player line — recognised by: single or double token, |Hero etc.
+        pipe_lines = []
+        for raw_line in raw_lines_all:
+            if '|' not in raw_line:
+                continue
+            parts = raw_line.split('|')
+            first = parts[0].strip()
+            second = parts[1].strip() if len(parts) > 1 else ""
+            # Skip the player line that slipped in with |Hero
+            if len(first.split()) <= 2 and second in ("Hero", "Protagonist", "Player", ""):
+                continue
+            pipe_lines.append(raw_line.strip())
+
+        room_count  = len(base_data.get('rooms',  []))
+        item_count  = len(base_data.get('items',  []))
+        npc_count   = len(base_data.get('npcs',   []))
+        quest_count = len(base_data.get('quests', []))
+        total_expected = room_count + item_count + npc_count + quest_count
+        minimum_required = room_count  # at minimum the rooms must be renamed
+
+        if len(pipe_lines) < minimum_required:
+            raise ValueError(
+                f"LLM produced too few lines "
+                f"(need at least {minimum_required} for rooms, got {len(pipe_lines)})."
+            )
+        if len(pipe_lines) < total_expected:
+            print(f"\n   ⚠️  Partial output ({len(pipe_lines)}/{total_expected} lines) — filling rest from template.")
 
         def safe_split(line, expected_parts):
             parts = line.split('|')
@@ -314,21 +357,21 @@ The Sunken Compass|Retrieve the navigator's lost compass from the depths of Bloo
                 parts.extend(["[Mystery]"] * (expected_parts - len(parts)))
             return [p.strip() for p in parts[:expected_parts]]
 
-        # Rooms
+        # --- 3. Rooms ---
         rooms = base_data.get('rooms', [])
         for i in range(min(room_count, len(rooms))):
-            if i < len(lines):
-                parts = safe_split(lines[i], 2)
+            if i < len(pipe_lines):
+                parts = safe_split(pipe_lines[i], 2)
                 rooms[i]['name'] = parts[0]
                 exits = ", ".join(f"'{k}'" for k in rooms[i].get('exits', {}).keys())
                 rooms[i]['description'] = f"{parts[1]} Exits: {exits}."
 
-        # Items (start after rooms)
+        # --- 4. Items ---
         items = base_data.get('items', [])
         for i in range(min(item_count, len(items))):
             idx = room_count + i
-            if idx < len(lines):
-                parts = safe_split(lines[idx], 2)
+            if idx < len(pipe_lines):
+                parts = safe_split(pipe_lines[idx], 2)
                 items[i]['name'] = parts[0]
                 items[i]['description'] = parts[1]
                 if items[i].get('item_type') == 'weapon':
@@ -337,16 +380,15 @@ The Sunken Compass|Retrieve the navigator's lost compass from the depths of Bloo
                     items[i]['stats']['heal'] = random.randint(25, 60)
                 elif items[i].get('item_type') == 'armor':
                     items[i]['stats']['defense'] = random.randint(5, 20)
-                # Randomize value a bit
                 base_val = items[i].get('value', 10)
                 items[i]['value'] = max(5, base_val + random.randint(-10, 15))
 
-        # NPCs (start after rooms + items)
+        # --- 5. NPCs ---
         npcs = base_data.get('npcs', [])
         for i in range(min(npc_count, len(npcs))):
             idx = room_count + item_count + i
-            if idx < len(lines):
-                parts = safe_split(lines[idx], 3)
+            if idx < len(pipe_lines):
+                parts = safe_split(pipe_lines[idx], 3)
                 npcs[i]['name'] = parts[0]
                 npcs[i]['description'] = parts[1]
                 npcs[i]['dialogue'] = parts[2]
@@ -354,27 +396,19 @@ The Sunken Compass|Retrieve the navigator's lost compass from the depths of Bloo
                 if npcs[i].get('npc_type') == 'hostile':
                     npcs[i]['damage'] = random.randint(10, 30)
 
-        # Player line — LLM now emits only a name (no desc pipe)
-        # Accept only single short proper names; fall back to template value
+        # --- 6. Player ---
         player = base_data.get('player', {})
-        player_idx = room_count + item_count + npc_count
-        if player_idx < len(lines):
-            raw_player_line = lines[player_idx]
-            # Could be "Name" or "Name|desc" — take only first part
-            candidate = raw_player_line.split('|')[0].strip()
-            if candidate and len(candidate.split()) <= 2 and len(candidate) <= 24:
-                player['name'] = candidate
-            # else keep template name (Hurin)
+        if player_name_candidate:
+            player['name'] = player_name_candidate
         player['hp']   = random.randint(130, 200)
         player['gold'] = random.randint(40, 100)
 
-        # Quests (after player)
+        # --- 7. Quests ---
         quests = base_data.get('quests', [])
-        quest_count = len(quests)
         for i in range(quest_count):
-            idx = room_count + item_count + npc_count + 1 + i
-            if idx < len(lines):
-                parts = safe_split(lines[idx], 2)
+            idx = room_count + item_count + npc_count + i
+            if idx < len(pipe_lines):
+                parts = safe_split(pipe_lines[idx], 2)
                 quests[i]['name'] = parts[0]
                 quests[i]['description'] = parts[1]
 

@@ -2,8 +2,8 @@
     "rooms": [
         {
             "id": "room_village",
-            "name": "Mistveil Temple",
-            "description": "A labyrinthine complex shrouded in mist that refuses to lift, no matter the dawn. Exits: 'north', 'east'.",
+            "name": "Ashen Hallow",
+            "description": "A desolate place where ash and snow entwine like skeletal fingers. Exits: 'north', 'east'.",
             "x": 0,
             "y": 1,
             "exits": {
@@ -17,8 +17,8 @@
         },
         {
             "id": "room_market",
-            "name": "Emberfall Gorge",
-            "description": "Scorched earth and smoldering rocks hide ancient secrets beneath ash-filled clefts. Exits: 'west', 'north'.",
+            "name": "Thornhollow Ruin",
+            "description": "Vines have reclaimed the entrance, hiding ancient secrets within darkness. Exits: 'west', 'north'.",
             "x": 1,
             "y": 1,
             "exits": {
@@ -26,7 +26,9 @@
                 "north": "room_tower"
             },
             "item_ids": [
-                "item_apple"
+                "item_shield",
+                "item_apple",
+                "item_sword"
             ],
             "npc_ids": [
                 "npc_merchant"
@@ -34,182 +36,185 @@
         },
         {
             "id": "room_forest",
-            "name": "Echoing Falls",
-            "description": "Fog-shrouded waterfalls whisper forgotten melodies into an eerie silence. Exits: 'south', 'east', 'north'.",
+            "name": "Moonlit Fenway",
+            "description": "Silver water weaves through a tapestry of moon-dappled reeds at nightfall. Exits: 'south', 'east'.",
             "x": 0,
             "y": 0,
             "exits": {
                 "south": "room_village",
-                "east": "room_tower",
-                "north": "room_cave"
+                "east": "room_tower"
             },
             "item_ids": [],
-            "npc_ids": []
+            "npc_ids": [
+                "npc_goblin"
+            ]
         },
         {
             "id": "room_tower",
-            "name": "Riven Ridge",
-            "description": "A jagged outcropping of stone splits the sky with a perpetual, screaming wind. Exits: 'west', 'south'.",
+            "name": "Elder's Keep",
+            "description": "Forgotten texts bind books to crumbling shelves where shadows reign. Exits: 'west', 'south', 'north'.",
             "x": 1,
             "y": 0,
             "exits": {
                 "west": "room_forest",
-                "south": "room_market"
+                "south": "room_market",
+                "north": "room_dungeon"
             },
-            "item_ids": [],
+            "item_ids": [
+                "item_wand"
+            ],
             "npc_ids": [
                 "npc_wizard"
             ]
         },
         {
-            "id": "room_cave",
-            "name": "Shadowhaven Cove",
-            "description": "Darkness clings to this foreboding shore like a damp shroud. Exits: 'south'.",
-            "x": 0,
+            "id": "room_dungeon",
+            "name": "Duskwater Falls",
+            "description": "Frozen cascades plunge into an abyss where only mist and silence remain. Exits: 'south'.",
+            "x": 1,
             "y": -1,
             "exits": {
-                "south": "room_forest"
+                "south": "room_tower"
             },
             "item_ids": [],
-            "npc_ids": []
+            "npc_ids": [
+                "npc_skeleton"
+            ]
         }
     ],
     "items": [
         {
             "id": "item_apple",
-            "name": "Voidstone Dagger",
-            "description": "A blade that drinks light and whispers of forgotten names forged in the heart of Emberfall Gorge.",
+            "name": "Glinting Sceptre",
+            "description": "A rod that shatters light, imbuing its wielder with echoes of forgotten battles.",
             "item_type": "consumable",
             "stats": {
-                "heal": 32
+                "heal": 40
             },
-            "value": 16
+            "value": 18
         },
         {
             "id": "item_sword",
-            "name": "Flask of Moonfire",
-            "description": "Liquid starlight swirls within; one sip mends shattered flesh distilled by the Mistveil Temple's priests.",
+            "name": "Frosted Chalice",
+            "description": "Ice-encrusted vessel contains a draught capable of soothing even the coldest of hearts.",
             "item_type": "weapon",
             "stats": {
-                "damage": 46
+                "damage": 39
             },
-            "value": 41
+            "value": 22
         },
         {
             "id": "item_wand",
-            "name": "Gravewarden Shield",
-            "description": "A shield etched with the names of every warrior who ever carried it, crafted to bear the weight of history.",
+            "name": "Whispering Oar",
+            "description": "Paddles whisper secrets to those brave enough to listen in the stillness of dawn.",
             "item_type": "weapon",
             "stats": {
-                "damage": 20
+                "damage": 44
             },
-            "value": 54
+            "value": 70
         },
         {
             "id": "item_shield",
-            "name": "Sorrowstone Chalice",
-            "description": "Elegant curves contain a poison so potent it was used to anoint kings and seal their fate.",
+            "name": "Shattered Hourglass",
+            "description": "Time itself appears broken, lost grains whispering ancient truths.",
             "item_type": "armor",
             "stats": {
-                "defense": 5
+                "defense": 8
             },
-            "value": 35
-        },
-        {
-            "id": "item_potion",
-            "name": "Nightwalker Cloak",
-            "description": "Woven from shadows that cling to the wearer, granting stealth in the darkest depths.",
-            "item_type": "consumable",
-            "stats": {
-                "heal": 43
-            },
-            "value": 24
+            "value": 41
         }
     ],
     "npcs": [
         {
             "id": "npc_villager",
             "type": "NPC",
-            "name": "Mira the Undying",
-            "description": "A pale merchant who sells only by candlelight and never blinks.",
-            "hp": 54,
-            "dialogue": "Come closer, traveler; I carry wares that tempt even the bravest hearts.",
+            "name": "Arcturus Blackwood",
+            "description": "An enigmatic bard whose lute weeps with sorrow for a forgotten love.",
+            "hp": 123,
+            "dialogue": "In Ashen Hallow lies the one who brings darkness to our stage.",
             "npc_type": "neutral",
             "damage": 0
         },
         {
             "id": "npc_merchant",
             "type": "NPC",
-            "name": "Grask the Bone-Render",
-            "description": "A skeleton animated by dark sorcery, its joints wrapped in rusted chain.",
-            "hp": 150,
-            "dialogue": "Your bones will soon join my collection as a tribute to darkness.",
+            "name": "Korvus Ironfist",
+            "description": "A blacksmith forged in fire and shadow; his wares temper courage, not metal.",
+            "hp": 140,
+            "dialogue": "Hear me, traveler: you seek a blade tempered by the very darkness itself.",
             "npc_type": "merchant",
             "damage": 0
         },
         {
             "id": "npc_goblin",
             "type": "NPC",
-            "name": "Elara of the Mire",
-            "description": "A swamp-witch whose eyes hold centuries of cold, patient malice.",
-            "hp": -27,
-            "dialogue": "In the heart of Blood Mire lies an ancient, glowing artifact hidden from prying eyes.",
+            "name": "Xandri Moonwhisper",
+            "description": "An ethereal mystic bound to the lunar cycle, guiding lost souls through night's terrors.",
+            "hp": 57,
+            "dialogue": "Follow the moon's path, where secrets slumber and darkness reigns supreme.",
             "npc_type": "hostile",
-            "damage": 16
+            "damage": 13
         },
         {
             "id": "npc_wizard",
             "type": "NPC",
-            "name": "The Wraithkeeper",
-            "description": "An eerie figure clad in tattered robes that seem to be sewn from whispers and forgotten memories.",
-            "hp": 66,
-            "dialogue": "[Mystery]",
+            "name": "Korvath, Devourer of Souls",
+            "description": "A creature born from nightmares, feeding on terror that courses like a dark river.",
+            "hp": 134,
+            "dialogue": "Your screams will be my feast tonight.",
             "npc_type": "neutral",
             "damage": 0
+        },
+        {
+            "id": "npc_skeleton",
+            "type": "NPC",
+            "name": "The Lost Aria",
+            "description": "Retrieve the Glinting Sceptre hidden in Elder's Keep to break the curse that haunts Ashen Hallow.",
+            "hp": 81,
+            "dialogue": "[Mystery]",
+            "npc_type": "hostile",
+            "damage": 22
         }
     ],
     "quests": [
         {
             "id": "quest_kill_goblin",
-            "name": "The Sunken Compass Quest",
-            "description": "Retrieve the navigator's lost compass from the depths of Riven Ridge, said to hold the secrets of our ancient forebears.",
+            "name": "The Shadowed Depths",
+            "description": "Steal the Shattered Hourglass from Duskwater Falls, where time itself is said to have been lost.",
             "quest_type": "kill",
             "target_id": "npc_goblin",
             "deliver_to": null,
             "giver_npc_id": "npc_villager",
             "reward_gold": 30,
-            "status": "completed"
+            "status": "active"
         },
         {
             "id": "quest_collect_wand",
-            "name": "The Bone-Render's Bane",
-            "description": "Defeat Grask the Bone-Render haunting Mistveil Temple to lift the curse and free its trapped spirits.",
+            "name": "The Wizard's Lost Wand",
+            "description": "The Old Wizard's enchanted wand ended up in the Dark Forest. Retrieve it and return it to the Wizard.",
             "quest_type": "collect",
             "target_id": "item_wand",
             "deliver_to": null,
             "giver_npc_id": "npc_wizard",
             "reward_gold": 25,
-            "status": "completed"
+            "status": "available"
         }
     ],
     "player": {
         "id": "player_hero",
         "type": "Player",
-        "name": "Arin",
+        "name": "Eira",
         "description": "A brave young warrior with a sharp mind and sharper blade.",
-        "hp": 125,
-        "gold": 172,
+        "hp": 91,
+        "gold": 42,
         "inventory": [
-            "item_shield",
-            "item_sword",
-            "item_wand"
+            "item_apple"
         ],
-        "active_quests": [],
-        "completed_quests": [
-            "quest_collect_wand",
+        "active_quests": [
             "quest_kill_goblin"
         ],
-        "current_room_id": "room_forest",
-        "previous_room_id": "room_village"
+        "completed_quests": [],
+        "current_room_id": "room_market",
+        "previous_room_id": "room_tower"
     }
 }
