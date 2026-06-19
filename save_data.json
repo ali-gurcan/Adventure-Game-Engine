@@ -2,23 +2,25 @@
     "rooms": [
         {
             "id": "room_village",
-            "name": "Ashen Hallow",
-            "description": "A desolate place where ash and snow entwine like skeletal fingers. Exits: 'north', 'east'.",
+            "name": "Village Square",
+            "description": "A peaceful village square with a bubbling fountain. The villagers look worried, whispering of a monster in the forest.",
             "x": 0,
             "y": 1,
             "exits": {
                 "north": "room_forest",
                 "east": "room_market"
             },
-            "item_ids": [],
+            "item_ids": [
+                "item_apple"
+            ],
             "npc_ids": [
                 "npc_villager"
             ]
         },
         {
             "id": "room_market",
-            "name": "Thornhollow Ruin",
-            "description": "Vines have reclaimed the entrance, hiding ancient secrets within darkness. Exits: 'west', 'north'.",
+            "name": "Market District",
+            "description": "A bustling bazaar filled with exotic goods and spices. Merchants cry out their wares from every corner.",
             "x": 1,
             "y": 1,
             "exits": {
@@ -26,9 +28,7 @@
                 "north": "room_tower"
             },
             "item_ids": [
-                "item_shield",
-                "item_apple",
-                "item_sword"
+                "item_shield"
             ],
             "npc_ids": [
                 "npc_merchant"
@@ -36,23 +36,26 @@
         },
         {
             "id": "room_forest",
-            "name": "Moonlit Fenway",
-            "description": "Silver water weaves through a tapestry of moon-dappled reeds at nightfall. Exits: 'south', 'east'.",
+            "name": "Dark Forest",
+            "description": "The trees are so thick here that barely any sunlight reaches the ground. Something growls in the shadows...",
             "x": 0,
             "y": 0,
             "exits": {
                 "south": "room_village",
-                "east": "room_tower"
+                "east": "room_tower",
+                "north": "room_cave"
             },
-            "item_ids": [],
+            "item_ids": [
+                "item_sword"
+            ],
             "npc_ids": [
                 "npc_goblin"
             ]
         },
         {
             "id": "room_tower",
-            "name": "Elder's Keep",
-            "description": "Forgotten texts bind books to crumbling shelves where shadows reign. Exits: 'west', 'south', 'north'.",
+            "name": "Wizard's Tower",
+            "description": "The air crackles with magical energy. Bookshelves line every wall, and magical orbs cast a blue glow over the room.",
             "x": 1,
             "y": 0,
             "exits": {
@@ -68,125 +71,197 @@
             ]
         },
         {
+            "id": "room_cave",
+            "name": "Crystal Cave",
+            "description": "Glittering crystals illuminate the damp cave walls with eerie, multicoloured light. The air is cold and still.",
+            "x": 0,
+            "y": -1,
+            "exits": {
+                "south": "room_forest",
+                "east": "room_dungeon"
+            },
+            "item_ids": [
+                "item_potion"
+            ],
+            "npc_ids": []
+        },
+        {
             "id": "room_dungeon",
-            "name": "Duskwater Falls",
-            "description": "Frozen cascades plunge into an abyss where only mist and silence remain. Exits: 'south'.",
+            "name": "Ancient Dungeon",
+            "description": "A damp underground passage lit by flickering torches. The smell of decay hangs heavy in the air.",
             "x": 1,
             "y": -1,
             "exits": {
-                "south": "room_tower"
+                "south": "room_tower",
+                "west": "room_cave",
+                "east": "room_throne"
             },
             "item_ids": [],
             "npc_ids": [
                 "npc_skeleton"
+            ]
+        },
+        {
+            "id": "room_throne",
+            "name": "Throne Room",
+            "description": "A grand hall with a towering stone throne at the far end. Cobwebs hang from the rafters, and dust motes float in the pale light.",
+            "x": 2,
+            "y": -1,
+            "exits": {
+                "west": "room_dungeon"
+            },
+            "item_ids": [
+                "item_crown"
+            ],
+            "npc_ids": [
+                "npc_king"
             ]
         }
     ],
     "items": [
         {
             "id": "item_apple",
-            "name": "Glinting Sceptre",
-            "description": "A rod that shatters light, imbuing its wielder with echoes of forgotten battles.",
+            "name": "Healing Apple",
+            "description": "A shiny red apple that glows faintly with restorative magic.",
             "item_type": "consumable",
             "stats": {
-                "heal": 40
+                "heal": 20
             },
-            "value": 18
+            "value": 5
         },
         {
             "id": "item_sword",
-            "name": "Frosted Chalice",
-            "description": "Ice-encrusted vessel contains a draught capable of soothing even the coldest of hearts.",
+            "name": "Forest Sword",
+            "description": "An old broadsword found buried beneath the roots of an ancient oak.",
             "item_type": "weapon",
             "stats": {
-                "damage": 39
+                "damage": 15
             },
-            "value": 22
+            "value": 30
         },
         {
             "id": "item_wand",
-            "name": "Whispering Oar",
-            "description": "Paddles whisper secrets to those brave enough to listen in the stillness of dawn.",
+            "name": "Enchanted Wand",
+            "description": "A slender wand carved from moonwood, humming with arcane power. It was the wizard's most prized possession.",
             "item_type": "weapon",
             "stats": {
-                "damage": 44
+                "damage": 35
             },
-            "value": 70
+            "value": 60
         },
         {
             "id": "item_shield",
-            "name": "Shattered Hourglass",
-            "description": "Time itself appears broken, lost grains whispering ancient truths.",
+            "name": "Iron Shield",
+            "description": "A battered iron shield that has seen many battles. Its surface is scarred but it still holds strong.",
             "item_type": "armor",
             "stats": {
-                "defense": 8
+                "defense": 10
             },
-            "value": 41
+            "value": 40
+        },
+        {
+            "id": "item_potion",
+            "name": "Health Potion",
+            "description": "A glowing red magical liquid that smells of roses and copper. A single sip restores great vitality.",
+            "item_type": "consumable",
+            "stats": {
+                "heal": 50
+            },
+            "value": 25
+        },
+        {
+            "id": "item_crown",
+            "name": "Ancient Crown",
+            "description": "A golden crown encrusted with gems, cold to the touch. The Ghost King will want this back.",
+            "item_type": "misc",
+            "stats": {},
+            "value": 100
         }
     ],
     "npcs": [
         {
             "id": "npc_villager",
             "type": "NPC",
-            "name": "Arcturus Blackwood",
-            "description": "An enigmatic bard whose lute weeps with sorrow for a forgotten love.",
-            "hp": 123,
-            "dialogue": "In Ashen Hallow lies the one who brings darkness to our stage.",
+            "name": "Frightened Villager",
+            "description": "A local farmer who looks absolutely terrified, clutching a pitchfork for dear life.",
+            "hp": 100,
+            "dialogue": "Please, brave adventurer! A goblin has been terrorizing our woods. Defeat it and I'll reward you handsomely!",
             "npc_type": "neutral",
             "damage": 0
         },
         {
             "id": "npc_merchant",
             "type": "NPC",
-            "name": "Korvus Ironfist",
-            "description": "A blacksmith forged in fire and shadow; his wares temper courage, not metal.",
-            "hp": 140,
-            "dialogue": "Hear me, traveler: you seek a blade tempered by the very darkness itself.",
+            "name": "Traveling Merchant",
+            "description": "A shrewd trader with a heavy pack of goods and a glint of gold in his eye.",
+            "hp": 100,
+            "dialogue": "Welcome, traveler! The finest wares from across the realm. Looking to buy or sell?",
             "npc_type": "merchant",
             "damage": 0
         },
         {
             "id": "npc_goblin",
             "type": "NPC",
-            "name": "Xandri Moonwhisper",
-            "description": "An ethereal mystic bound to the lunar cycle, guiding lost souls through night's terrors.",
-            "hp": 57,
-            "dialogue": "Follow the moon's path, where secrets slumber and darkness reigns supreme.",
+            "name": "Vicious Goblin",
+            "description": "A green-skinned monster holding a jagged dagger, drooling with malicious glee.",
+            "hp": 40,
+            "dialogue": "Graargh! Tasty adventurer! Goblin SMASH!",
             "npc_type": "hostile",
-            "damage": 13
+            "damage": 15
         },
         {
             "id": "npc_wizard",
             "type": "NPC",
-            "name": "Korvath, Devourer of Souls",
-            "description": "A creature born from nightmares, feeding on terror that courses like a dark river.",
-            "hp": 134,
-            "dialogue": "Your screams will be my feast tonight.",
+            "name": "Old Wizard",
+            "description": "An ancient sorcerer wearing a moth-eaten pointed hat, surrounded by floating books.",
+            "hp": 200,
+            "dialogue": "Ah, a visitor! My enchanted wand was stolen by that wretched goblin. Bring it back and I shall grant you passage to the dungeon.",
             "npc_type": "neutral",
             "damage": 0
         },
         {
             "id": "npc_skeleton",
             "type": "NPC",
-            "name": "The Lost Aria",
-            "description": "Retrieve the Glinting Sceptre hidden in Elder's Keep to break the curse that haunts Ashen Hallow.",
-            "hp": 81,
-            "dialogue": "[Mystery]",
+            "name": "Skeleton Warrior",
+            "description": "A rattling skeleton gripping a rusty sword, its empty eye sockets glowing faintly red.",
+            "hp": 60,
+            "dialogue": "...*rattles menacingly*...",
             "npc_type": "hostile",
-            "damage": 22
+            "damage": 20
+        },
+        {
+            "id": "npc_king",
+            "type": "NPC",
+            "name": "Ghost King",
+            "description": "A translucent figure sitting on the throne, radiating an aura of cold sorrow.",
+            "hp": 150,
+            "dialogue": "Return my ancient crown to me, mortal... and I shall release the curse upon this land.",
+            "npc_type": "neutral",
+            "damage": 0
         }
     ],
     "quests": [
         {
             "id": "quest_kill_goblin",
-            "name": "The Shadowed Depths",
-            "description": "Steal the Shattered Hourglass from Duskwater Falls, where time itself is said to have been lost.",
+            "name": "Goblin Hunt",
+            "description": "The villager begs you to defeat the vicious goblin terrorizing the Dark Forest. A reward awaits!",
             "quest_type": "kill",
             "target_id": "npc_goblin",
             "deliver_to": null,
             "giver_npc_id": "npc_villager",
             "reward_gold": 30,
-            "status": "active"
+            "status": "available"
+        },
+        {
+            "id": "quest_deliver_crown",
+            "name": "The Lost Crown",
+            "description": "The Ghost King haunts the throne room, longing for his Ancient Crown. Find it in the throne room and bring it to him.",
+            "quest_type": "deliver",
+            "target_id": "item_crown",
+            "deliver_to": "npc_king",
+            "giver_npc_id": "npc_wizard",
+            "reward_gold": 50,
+            "status": "available"
         },
         {
             "id": "quest_collect_wand",
@@ -203,18 +278,14 @@
     "player": {
         "id": "player_hero",
         "type": "Player",
-        "name": "Eira",
+        "name": "Hurin",
         "description": "A brave young warrior with a sharp mind and sharper blade.",
-        "hp": 91,
-        "gold": 42,
-        "inventory": [
-            "item_apple"
-        ],
-        "active_quests": [
-            "quest_kill_goblin"
-        ],
+        "hp": 150,
+        "gold": 50,
+        "inventory": [],
+        "active_quests": [],
         "completed_quests": [],
-        "current_room_id": "room_market",
-        "previous_room_id": "room_tower"
+        "current_room_id": "room_village",
+        "previous_room_id": null
     }
 }
